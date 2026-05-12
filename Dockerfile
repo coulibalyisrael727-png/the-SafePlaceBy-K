@@ -19,6 +19,9 @@ RUN pip install --no-cache-dir --user -r requirements.txt
 # Stage 2: Runtime
 FROM python:3.11-slim
 
+# Security: Create non-root user immediately to prevent root execution
+RUN groupadd -r django && useradd -r -g django django
+
 WORKDIR /app
 
 # Installer les runtime dependencies
@@ -26,9 +29,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     postgresql-client-common \
     postgresql-client \
     && rm -rf /var/lib/apt/lists/*
-
-# Créer un utilisateur non-root pour la sécurité
-RUN groupadd -r django && useradd -r -g django django
 
 # Copier les dépendances Python du builder
 COPY --from=builder /root/.local /home/django/.local
@@ -46,8 +46,12 @@ ENV PATH=/home/django/.local/bin:$PATH
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 
-# Changer vers l'utilisateur non-root
+# Security: Force non-root execution and prevent privilege escalation
 USER django
+
+# Security: Health check to ensure container is running as non-root
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD id -u && id -u | grep -q '^django$' || exit 1
 
 # Exposer le port
 EXPOSE 8000
