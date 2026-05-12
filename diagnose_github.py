@@ -6,16 +6,26 @@ import subprocess
 import os
 import sys
 
-def run_command(cmd, description):
-    """Exécuter une commande et retourner le résultat"""
+def run_command(cmd_args, description):
+    """Exécuter une commande de manière sécurisée et retourner le résultat"""
     print(f"\n🔍 {description}...")
     try:
-        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, cwd="c:\\Users\\couli\\Desktop\\Nouveau dossier (3)")
-        print(f"✅ Commande: {cmd}")
+        # Utiliser une liste au lieu de shell=True pour éviter l'injection
+        result = subprocess.run(
+            cmd_args,
+            capture_output=True,
+            text=True,
+            cwd="c:\\Users\\couli\\Desktop\\Nouveau dossier (3)",
+            timeout=30  # Timeout pour éviter les blocages
+        )
+        print(f"✅ Commande: {' '.join(cmd_args)}")
         print(f"📤 Sortie: {result.stdout.strip()}")
         if result.stderr:
             print(f"❌ Erreur: {result.stderr.strip()}")
         return result.returncode == 0
+    except subprocess.TimeoutExpired:
+        print(f"❌ Timeout: La commande a pris trop de temps")
+        return False
     except Exception as e:
         print(f"❌ Exception: {str(e)}")
         return False
@@ -26,19 +36,19 @@ def main():
     print("=" * 50)
     
     # Vérifier l'état Git
-    run_command("git status", "Vérification du statut Git")
+    run_command(["git", "status"], "Vérification du statut Git")
     
     # Vérifier les remotes
-    run_command("git remote -v", "Vérification des remotes")
+    run_command(["git", "remote", "-v"], "Vérification des remotes")
     
     # Vérifier la configuration du remote
-    run_command("git config --get remote.origin.url", "URL du remote origin")
+    run_command(["git", "config", "--get", "remote.origin.url"], "URL du remote origin")
     
     # Vérifier les branches
-    run_command("git branch -a", "Vérification des branches")
+    run_command(["git", "branch", "-a"], "Vérification des branches")
     
     # Vérifier le dernier commit
-    run_command("git log --oneline -1", "Dernier commit")
+    run_command(["git", "log", "--oneline", "-1"], "Dernier commit")
     
     print("\n" + "=" * 50)
     print("📋 Instructions manuelles si le push échoue:")
