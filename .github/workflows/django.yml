@@ -52,7 +52,11 @@ jobs:
     
     - name: Run migrations
       env:
-        DATABASE_URL: postgresql://${{ secrets.POSTGRES_USER || 'test' }}:${{ secrets.POSTGRES_PASSWORD || 'test' }}@localhost/${{ secrets.POSTGRES_DB || 'safeplace_test' }}
+        POSTGRES_DB: ${{ secrets.POSTGRES_DB || 'safeplace_test' }}
+        POSTGRES_USER: ${{ secrets.POSTGRES_USER || 'test' }}
+        POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD || 'test' }}
+        POSTGRES_HOST: localhost
+        POSTGRES_PORT: 5432
         REDIS_URL: redis://localhost:6379/0
         SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY || 'test-secret-key-for-ci-only' }}
         STRIPE_PUBLIC_KEY: ${{ secrets.STRIPE_PUBLIC_KEY || 'pk_test_placeholder' }}
@@ -62,7 +66,11 @@ jobs:
     
     - name: Run tests
       env:
-        DATABASE_URL: postgresql://${{ secrets.POSTGRES_USER || 'test' }}:${{ secrets.POSTGRES_PASSWORD || 'test' }}@localhost/${{ secrets.POSTGRES_DB || 'safeplace_test' }}
+        POSTGRES_DB: ${{ secrets.POSTGRES_DB || 'safeplace_test' }}
+        POSTGRES_USER: ${{ secrets.POSTGRES_USER || 'test' }}
+        POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD || 'test' }}
+        POSTGRES_HOST: localhost
+        POSTGRES_PORT: 5432
         REDIS_URL: redis://localhost:6379/0
         SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY || 'test-secret-key-for-ci-only' }}
         STRIPE_PUBLIC_KEY: ${{ secrets.STRIPE_PUBLIC_KEY || 'pk_test_placeholder' }}
