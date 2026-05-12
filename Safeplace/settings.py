@@ -11,6 +11,18 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import os
+
+# Application principale URL pour le dashboard
+MAIN_SITE_URL = 'http://127.0.0.1:8000'
+MAIN_API_URL = 'http://127.0.0.1:8000/api/v1/'
+DASHBOARD_API_KEY = 'safeplace_secret_dashboard_key_2026'
+
+# Configuration des dons
+DONATION_PAYPAL_URL = 'https://paypal.me/safeplacebyk'
+DONATION_KOFI_URL = 'https://ko-fi.com/safeplacebyk'
+DONATION_BANK_LABEL = 'The SafePlace by K'
+DONATION_BANK_IBAN = 'FR76 1234 5678 9101 1121 3141 516'
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,7 +37,7 @@ SECRET_KEY = 'django-insecure-q3=+123_-!0of8m5-!v1tpw!uflyp$$zixw!d^66d6a(hgpa@i
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'testserver']
 
 
 # Application definition
@@ -37,6 +49,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
     'podcastSafe',
 ]
 
@@ -74,7 +87,6 @@ WSGI_APPLICATION = 'Safeplace.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-import os
 from decouple import config
 
 # Use PostgreSQL in production, SQLite in development
@@ -136,10 +148,20 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Stripe Configuration
-import os
-STRIPE_PUBLIC_KEY = os.environ.get('STRIPE_PUBLIC_KEY', 'pk_test_your_key')
-STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY', 'sk_test_your_key')
+# Stripe (optionnel — dons par carte si STRIPE_DONATIONS_ENABLED=true et clés valides)
+STRIPE_PUBLIC_KEY = config('STRIPE_PUBLIC_KEY', default='')
+STRIPE_SECRET_KEY = config('STRIPE_SECRET_KEY', default='')
+STRIPE_DONATIONS_ENABLED = config('STRIPE_DONATIONS_ENABLED', default='false').lower() in ('1', 'true', 'yes')
+
+# Dons sans frais d’intégration : liens + virement (lu depuis .env / variables d’environnement)
+DONATION_PAYPAL_URL = config('DONATION_PAYPAL_URL', default='')
+DONATION_KOFI_URL = config('DONATION_KOFI_URL', default='')
+DONATION_TIPEEE_URL = config('DONATION_TIPEEE_URL', default='')
+DONATION_UTIP_URL = config('DONATION_UTIP_URL', default='')
+DONATION_BUYMEACOFFEE_URL = config('DONATION_BUYMEACOFFEE_URL', default='')
+DONATION_BANK_IBAN = config('DONATION_BANK_IBAN', default='')
+DONATION_BANK_LABEL = config('DONATION_BANK_LABEL', default='The SafePlace by K')
+DONATION_NOTIFY_EMAIL = config('DONATION_NOTIFY_EMAIL', default='')
 
 # Session Configuration
 SESSION_COOKIE_SECURE = not DEBUG

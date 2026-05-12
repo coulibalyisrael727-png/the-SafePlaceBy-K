@@ -120,8 +120,12 @@
                 <h4 class="font-label-md text-primary text-lg">{{ stream.title }}</h4>
                 <p class="text-on-surface-variant text-sm mt-1">{{ stream.description }}</p>
                 <div class="flex gap-3 mt-3">
-                  <span class="text-xs bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full font-bold">
-                    {% if stream.platform == 'youtube' %}[TV]{% elif stream.platform == 'facebook' %}f{% elif stream.platform == 'tiktok' %}[MUSIC]{% elif stream.platform == 'instagram' %}[CAMERA]{% else %}[MUSIC]{% endif %}
+                  <span class="text-xs bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full font-bold inline-flex items-center gap-1">
+                    {% if stream.platform == 'youtube' %}<span class="material-symbols-outlined text-[14px]">smart_display</span>
+                    {% elif stream.platform == 'facebook' %}<span class="material-symbols-outlined text-[14px]">public</span>
+                    {% elif stream.platform == 'tiktok' %}<span class="material-symbols-outlined text-[14px]">music_note</span>
+                    {% elif stream.platform == 'instagram' %}<span class="material-symbols-outlined text-[14px]">photo_camera</span>
+                    {% else %}<span class="material-symbols-outlined text-[14px]">podcasts</span>{% endif %}
                     {{ stream.get_platform_display }}
                   </span>
                   <span class="text-xs {% if stream.status == 'live' %}bg-error text-on-error{% elif stream.status == 'scheduled' %}bg-secondary-container text-on-secondary-container{% else %}bg-outline-variant text-on-surface-variant{% endif %} px-3 py-1 rounded-full font-bold">

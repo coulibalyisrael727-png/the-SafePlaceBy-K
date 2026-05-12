@@ -199,207 +199,200 @@
 
 </main>
 
-<!-- Section Donation sécurisée -->
+<!-- Section Dons — modèle gratuit pour le site (liens + virement + signalement) -->
 <div class="bg-gradient-to-b from-primary/10 to-secondary/5 py-20 mt-20 border-t border-outline-variant">
   <div class="max-w-5xl mx-auto px-4 md:px-margin-desktop">
-    
-    <!-- En-tête donation -->
+
     <div class="mb-12 text-center">
       <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary-container text-on-secondary-container text-sm font-bold mb-5">
         <span class="material-symbols-outlined text-[16px]" style="font-variation-settings:'FILL' 1" aria-hidden="true">volunteer_activism</span>
-        SOUTIEN OPTIONNEL
+        SOUTIEN DU MINISTÈRE
       </div>
       <h2 class="font-display-lg text-primary text-3xl md:text-5xl mb-4">Faire un don</h2>
-      <p class="text-on-surface-variant text-body-lg max-w-xl mx-auto">
-        Vos dons nous permettent de continuer à produire du contenu de qualité et à maintenir une communauté vivante et engagée.
+      <p class="text-on-surface-variant text-body-lg max-w-2xl mx-auto">
+        <strong class="text-on-surface">Aucun abonnement ni commission SafePlace</strong> : vous utilisez des plateformes gratuites à intégrer (liens), un virement bancaire, ou vous nous prévenez après un don — le site ne prélève rien sur vos dons.
       </p>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
-      
-      <!-- Formulaire de donation -->
-      <div class="lg:col-span-2">
-        <div class="bg-surface-container-lowest p-8 rounded-[24px] border border-outline-variant shadow-[0px_4px_20px_rgba(11,61,46,0.05)]">
-          
-          <h3 class="font-headline-md text-primary mb-6 text-xl">Faire un don sécurisé</h3>
 
-          <!-- Messages de feedback -->
-          <div id="donationErrorMessage"
-               class="hidden bg-error-container text-on-error-container p-4 rounded-xl mb-6 border border-error text-sm"
-               role="alert" aria-live="assertive"></div>
-          <div id="donationSuccessMessage"
-               class="hidden bg-secondary-container text-on-secondary-container p-6 rounded-xl mb-6 border border-secondary text-center"
-               role="status" aria-live="polite">
-            <span class="material-symbols-outlined text-4xl block mb-2" style="font-variation-settings:'FILL' 1" aria-hidden="true">check_circle</span>
-            <p class="font-bold text-lg mb-1">Merci pour votre don !</p>
-            <p class="text-sm opacity-80">Votre contribution a été reçue avec succès. Que Dieu vous bénisse!</p>
+      <div class="lg:col-span-2 space-y-8">
+
+        <div class="bg-surface-container-lowest p-8 rounded-[24px] border border-outline-variant shadow-[0px_4px_20px_rgba(11,61,46,0.05)]">
+          <h3 class="font-headline-md text-primary mb-2 text-xl">Moyens directs (recommandés)</h3>
+          <p class="text-on-surface-variant text-sm mb-6">Cliquez sur une plateforme : le paiement s’effectue chez eux (éventuels frais uniquement ceux de la plateforme, pas du site).</p>
+
+          {% if donation_channels %}
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {% for ch in donation_channels %}
+            <a href="{{ ch.url }}" target="_blank" rel="noopener noreferrer"
+               class="flex items-start gap-3 p-4 rounded-xl border-2 border-outline-variant bg-surface-container-low hover:border-secondary hover:bg-secondary-container/30 transition-all no-underline text-inherit">
+              <span class="material-symbols-outlined text-primary text-2xl shrink-0">{{ ch.icon }}</span>
+              <span>
+                <span class="font-bold text-on-surface block">{{ ch.label }}</span>
+                <span class="text-xs text-on-surface-variant">{{ ch.description }}</span>
+              </span>
+              <span class="material-symbols-outlined text-secondary ml-auto shrink-0">open_in_new</span>
+            </a>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="p-6 rounded-xl bg-surface-container border border-outline-variant text-sm text-on-surface-variant">
+            <p class="mb-2"><strong class="text-on-surface">À configurer dans votre fichier d’environnement</strong> (ex. <code class="text-xs bg-surface-container-high px-1 rounded">.env</code>) :</p>
+            <ul class="list-disc pl-5 space-y-1 text-xs font-mono">
+              <li>DONATION_PAYPAL_URL</li>
+              <li>DONATION_KOFI_URL</li>
+              <li>DONATION_TIPEEE_URL</li>
+              <li>DONATION_UTIP_URL</li>
+              <li>DONATION_BUYMEACOFFEE_URL</li>
+            </ul>
+            <p class="mt-3 text-xs">Exemple PayPal : <span class="break-all">https://paypal.me/votrecompte</span></p>
+          </div>
+          {% endif %}
+
+          {% if donation_iban %}
+          <div class="mt-8 p-6 rounded-xl border border-outline-variant bg-surface-container-low">
+            <h4 class="font-headline-md text-primary mb-2 text-lg flex items-center gap-2">
+              <span class="material-symbols-outlined">account_balance</span> Virement bancaire
+            </h4>
+            <p class="text-sm text-on-surface-variant mb-3">Ordre : <strong class="text-on-surface">{{ donation_bank_label }}</strong></p>
+            <div class="flex flex-wrap items-center gap-2">
+              <code id="sp-donation-iban" class="flex-1 min-w-0 text-sm bg-surface-container-high px-3 py-2 rounded-lg break-all">{{ donation_iban }}</code>
+              <button type="button" id="sp-copy-iban"
+                      class="bg-primary text-on-primary font-bold px-4 py-2 rounded-full text-sm hover:opacity-90">
+                Copier l’IBAN
+              </button>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="bg-surface-container-lowest p-8 rounded-[24px] border border-outline-variant shadow-[0px_4px_20px_rgba(11,61,46,0.05)]">
+          <h3 class="font-headline-md text-primary mb-2 text-xl">Après un virement ou un don hors site</h3>
+          <p class="text-on-surface-variant text-sm mb-6">Un e-mail part à l’équipe (gratuit, via votre serveur mail). Utile pour vous remercier et tenir une liste de soutiens.</p>
+
+          <div id="pledgeErrorMessage" class="hidden bg-error-container text-on-error-container p-4 rounded-xl mb-4 border border-error text-sm" role="alert"></div>
+          <div id="pledgeSuccessMessage" class="hidden bg-secondary-container text-on-secondary-container p-4 rounded-xl mb-4 text-sm text-center" role="status"></div>
+
+          <form id="pledgeDonationForm" class="space-y-4">
+            {% csrf_token %}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label for="pledge-name" class="block text-sm font-bold text-on-surface mb-1">Nom</label>
+                <input type="text" id="pledge-name" name="name" class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-low text-sm" placeholder="Votre nom" />
+              </div>
+              <div>
+                <label for="pledge-email" class="block text-sm font-bold text-on-surface mb-1">E-mail <span class="text-error">*</span></label>
+                <input type="email" id="pledge-email" name="email" required class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-low text-sm" placeholder="vous@email.com" />
+              </div>
+            </div>
+            <div>
+              <label for="pledge-amount" class="block text-sm font-bold text-on-surface mb-1">Montant annoncé (optionnel)</label>
+              <input type="text" id="pledge-amount" name="amount_hint" class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-low text-sm" placeholder="ex. 20 €" />
+            </div>
+            <div>
+              <label for="pledge-method" class="block text-sm font-bold text-on-surface mb-1">Moyen</label>
+              <select id="pledge-method" name="method" class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-low text-sm">
+                <option value="virement">Virement bancaire</option>
+                <option value="paypal">PayPal</option>
+                <option value="kofi">Ko-fi / Tipeee / autre</option>
+              </select>
+            </div>
+            <div>
+              <label for="pledge-msg" class="block text-sm font-bold text-on-surface mb-1">Message (optionnel)</label>
+              <textarea id="pledge-msg" name="message" rows="2" class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-low text-sm resize-none" placeholder="Une pensée pour l’équipe…"></textarea>
+            </div>
+            <button type="submit" id="pledgeSubmitBtn" class="w-full bg-secondary-container text-on-secondary-container font-bold py-3 rounded-full hover:opacity-90">
+              Envoyer la notification à l’équipe
+            </button>
+          </form>
+        </div>
+
+        {% if stripe_donations_enabled %}
+        <details class="bg-surface-container-lowest p-6 rounded-[24px] border border-outline-variant">
+          <summary class="font-bold text-primary cursor-pointer">Autre option : don par carte (Stripe)</summary>
+          <p class="text-xs text-on-surface-variant mt-3 mb-4">Activé uniquement si vous l’avez explicitement demandé dans la configuration serveur.</p>
+
+          <div id="donationErrorMessage" class="hidden bg-error-container text-on-error-container p-4 rounded-xl mb-4 border border-error text-sm" role="alert"></div>
+          <div id="donationSuccessMessage" class="hidden bg-secondary-container text-on-secondary-container p-6 rounded-xl mb-4 border border-secondary text-center" role="status">
+            <span class="material-symbols-outlined text-4xl block mb-2" style="font-variation-settings:'FILL' 1">check_circle</span>
+            <p class="font-bold">Merci pour votre don !</p>
           </div>
 
-          <form id="donationForm" novalidate class="space-y-5">
+          <form id="donationForm" novalidate class="space-y-4 mt-4">
             {% csrf_token %}
-
-            <!-- Montant du don (options rapides + personnalisé) -->
             <div>
-              <label class="block font-label-md text-on-surface mb-3 text-sm font-bold">
-                Montant du don <span class="text-error" aria-hidden="true">*</span>
-              </label>
-              <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
-                <button type="button" class="donation-amount-btn px-4 py-2 rounded-xl border-2 border-outline-variant bg-surface-container-low text-on-surface hover:bg-secondary-container hover:border-secondary transition-all font-bold text-sm" data-amount="500">
-                  5€
-                </button>
-                <button type="button" class="donation-amount-btn px-4 py-2 rounded-xl border-2 border-outline-variant bg-surface-container-low text-on-surface hover:bg-secondary-container hover:border-secondary transition-all font-bold text-sm" data-amount="1000">
-                  10€
-                </button>
-                <button type="button" class="donation-amount-btn px-4 py-2 rounded-xl border-2 border-outline-variant bg-surface-container-low text-on-surface hover:bg-secondary-container hover:border-secondary transition-all font-bold text-sm" data-amount="2500">
-                  25€
-                </button>
-                <button type="button" class="donation-amount-btn px-4 py-2 rounded-xl border-2 border-outline-variant bg-surface-container-low text-on-surface hover:bg-secondary-container hover:border-secondary transition-all font-bold text-sm" data-amount="5000">
-                  50€
-                </button>
+              <label class="block text-sm font-bold mb-2">Montant (€)</label>
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-2">
+                <button type="button" class="donation-amount-btn px-3 py-2 rounded-xl border-2 border-outline-variant text-sm font-bold" data-amount="500">5€</button>
+                <button type="button" class="donation-amount-btn px-3 py-2 rounded-xl border-2 border-outline-variant text-sm font-bold" data-amount="1000">10€</button>
+                <button type="button" class="donation-amount-btn px-3 py-2 rounded-xl border-2 border-outline-variant text-sm font-bold" data-amount="2500">25€</button>
+                <button type="button" class="donation-amount-btn px-3 py-2 rounded-xl border-2 border-outline-variant text-sm font-bold" data-amount="5000">50€</button>
               </div>
-              <div class="flex gap-2">
-                <input type="number"
-                       id="customDonationAmount"
-                       name="donation_amount"
-                       min="1"
-                       placeholder="Montant personnalisé (en €)"
-                       class="flex-1 px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-secondary/30 outline-none bg-surface-container-low text-on-surface text-sm transition-shadow" />
-              </div>
-              <p class="text-xs text-on-surface-variant mt-2">Montant en centimes (ex: 1000 = 10€)</p>
+              <input type="number" id="customDonationAmount" min="1" step="1" placeholder="Autre montant en €" class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-low text-sm" />
             </div>
-
-            <!-- Nom du donateur -->
             <div>
-              <label for="donation-name" class="block font-label-md text-on-surface mb-2 text-sm font-bold">
-                Votre nom (optionnel)
-              </label>
-              <input type="text"
-                     id="donation-name"
-                     name="donor_name"
-                     placeholder="Comment souhaitez-vous être identifié?"
-                     class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-secondary/30 outline-none bg-surface-container-low text-on-surface text-sm transition-shadow" />
+              <label for="donation-name" class="block text-sm font-bold mb-1">Nom (optionnel)</label>
+              <input type="text" id="donation-name" class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-low text-sm" />
             </div>
-
-            <!-- Email du donateur -->
             <div>
-              <label for="donation-email" class="block font-label-md text-on-surface mb-2 text-sm font-bold">
-                Adresse e-mail <span class="text-error" aria-hidden="true">*</span>
-              </label>
-              <input type="email"
-                     id="donation-email"
-                     name="donor_email"
-                     required
-                     placeholder="votre@email.com"
-                     class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-secondary/30 outline-none bg-surface-container-low text-on-surface text-sm transition-shadow" />
+              <label for="donation-email" class="block text-sm font-bold mb-1">E-mail <span class="text-error">*</span></label>
+              <input type="email" id="donation-email" required class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-low text-sm" />
             </div>
-
-            <!-- Message optionnel -->
             <div>
-              <label for="donation-message" class="block font-label-md text-on-surface mb-2 text-sm font-bold">
-                Message d'encouragement (optionnel)
-              </label>
-              <textarea id="donation-message"
-                        name="donor_message"
-                        rows="3"
-                        placeholder="Partagez vos pensées..."
-                        class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-secondary/30 outline-none bg-surface-container-low text-on-surface text-sm transition-shadow resize-none"></textarea>
+              <label for="donation-message" class="block text-sm font-bold mb-1">Message</label>
+              <textarea id="donation-message" rows="2" class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-low text-sm resize-none"></textarea>
             </div>
-
-            <!-- Paiement Stripe -->
             <div>
-              <label class="block font-label-md text-on-surface mb-2 text-sm font-bold">
-                Informations de paiement <span class="text-error" aria-hidden="true">*</span>
-              </label>
+              <label class="block text-sm font-bold mb-2">Carte bancaire</label>
               <div id="stripe-card" class="p-4 border border-outline-variant rounded-xl bg-surface-container-low"></div>
               <div id="stripe-errors" class="text-error text-sm mt-2"></div>
             </div>
-
-            <!-- Consentement -->
-            <label class="flex items-start gap-3 cursor-pointer group">
-              <input type="checkbox"
-                     id="donation-consent"
-                     name="donation_consent"
-                     required
-                     class="sr-only">
-              <span id="donation-consent-box"
-                    class="mt-0.5 w-5 h-5 rounded border-2 border-outline flex-shrink-0 flex items-center justify-center transition-colors"
-                    aria-hidden="true"></span>
-              <span class="text-sm text-on-surface-variant leading-relaxed">
-                J'accepte que mes données soient utilisées pour traiter ce don de manière sécurisée.
-                <span class="text-error" aria-hidden="true">*</span>
-              </span>
+            <label class="flex items-start gap-3 cursor-pointer">
+              <input type="checkbox" id="donation-consent" required class="sr-only">
+              <span id="donation-consent-box" class="mt-1 w-5 h-5 rounded border-2 border-outline shrink-0 flex items-center justify-center"></span>
+              <span class="text-xs text-on-surface-variant">J’accepte le traitement de ce don par Stripe.</span>
             </label>
-
-            <!-- Bouton -->
-            <button type="submit"
-                    id="donationSubmitBtn"
-                    class="w-full bg-primary text-on-primary font-bold px-6 py-4 rounded-full hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2 text-sm">
-              <span class="material-symbols-outlined text-[20px]" style="font-variation-settings:'FILL' 1" aria-hidden="true">favorite</span>
-              Faire un don sécurisé
-            </button>
-
-            <p class="text-center text-xs text-on-surface-variant">
-              <span class="material-symbols-outlined text-[14px] align-middle">lock</span> Paiement sécurisé via Stripe
-            </p>
+            <button type="submit" id="donationSubmitBtn" class="w-full bg-primary text-on-primary font-bold py-3 rounded-full">Payer par carte</button>
           </form>
-        </div>
+        </details>
+        {% endif %}
       </div>
 
-      <!-- Infos latérales donation -->
       <div class="space-y-6">
-        
-        <!-- Impact du don -->
         <div class="bg-surface-container-lowest p-6 rounded-[24px] border border-outline-variant">
-          <h4 class="font-headline-md text-primary mb-4 text-lg">Impact de votre don</h4>
+          <h4 class="font-headline-md text-primary mb-4 text-lg">Pourquoi ce modèle ?</h4>
           <ul class="space-y-3 text-on-surface-variant text-sm">
-            <li class="flex gap-2 items-start">
-              <span class="material-symbols-outlined text-secondary flex-shrink-0 mt-0.5 text-[18px]">check_circle</span>
-              <span><strong class="text-on-surface">5€</strong> — Soutenir la production d'un épisode</span>
-            </li>
-            <li class="flex gap-2 items-start">
-              <span class="material-symbols-outlined text-secondary flex-shrink-0 mt-0.5 text-[18px]">check_circle</span>
-              <span><strong class="text-on-surface">10€</strong> — Supporter un live streaming</span>
-            </li>
-            <li class="flex gap-2 items-start">
-              <span class="material-symbols-outlined text-secondary flex-shrink-0 mt-0.5 text-[18px]">check_circle</span>
-              <span><strong class="text-on-surface">25€</strong> — Financer du matériel audio</span>
-            </li>
-            <li class="flex gap-2 items-start">
-              <span class="material-symbols-outlined text-secondary flex-shrink-0 mt-0.5 text-[18px]">check_circle</span>
-              <span><strong class="text-on-surface">50€+</strong> — Créer des contenus exclusifs</span>
-            </li>
+            <li class="flex gap-2"><span class="material-symbols-outlined text-secondary shrink-0">savings</span><span><strong class="text-on-surface">0 €</strong> de frais d’intégration pour vous : des simples liens dans le site.</span></li>
+            <li class="flex gap-2"><span class="material-symbols-outlined text-secondary shrink-0">public</span><span>Vos donateurs utilisent les outils qu’ils connaissent déjà (PayPal, Ko-fi…).</span></li>
+            <li class="flex gap-2"><span class="material-symbols-outlined text-secondary shrink-0">mail</span><span>Le formulaire de signalement envoie un e-mail à votre équipe (SMTP à configurer).</span></li>
           </ul>
         </div>
 
-        <!-- Témoignage -->
-        <div class="bg-secondary p-6 rounded-[24px] text-on-secondary relative overflow-hidden">
-          <div class="absolute -top-8 -right-8 text-8xl opacity-10">
-            <span class="material-symbols-outlined">favorite</span>
-          </div>
-          <p class="text-on-secondary/90 text-sm leading-relaxed italic mb-4 relative z-10">
-            "Grâce à vos dons, nous pouvons continuer à servir la communauté avec passion et intégrité."
-          </p>
-          <p class="font-bold text-sm relative z-10">— L'équipe SafePlace</p>
+        <div class="bg-surface-container-lowest p-6 rounded-[24px] border border-outline-variant">
+          <h4 class="font-headline-md text-primary mb-4 text-lg">Impact indicatif</h4>
+          <ul class="space-y-3 text-on-surface-variant text-sm">
+            <li class="flex gap-2 items-start"><span class="material-symbols-outlined text-secondary text-[18px]">check_circle</span><span><strong class="text-on-surface">5€</strong> — Un épisode</span></li>
+            <li class="flex gap-2 items-start"><span class="material-symbols-outlined text-secondary text-[18px]">check_circle</span><span><strong class="text-on-surface">10€</strong> — Un live</span></li>
+            <li class="flex gap-2 items-start"><span class="material-symbols-outlined text-secondary text-[18px]">check_circle</span><span><strong class="text-on-surface">25€+</strong> — Matériel &amp; diffusion</span></li>
+          </ul>
         </div>
 
-        <!-- Sécurité -->
         <div class="bg-secondary-container/20 p-6 rounded-xl border border-secondary/30">
           <div class="flex gap-3">
-            <span class="material-symbols-outlined text-secondary flex-shrink-0 mt-0.5">lock</span>
+            <span class="material-symbols-outlined text-secondary shrink-0">verified_user</span>
             <div>
-              <h5 class="font-bold text-secondary text-sm mb-1">100% Sécurisé</h5>
-              <p class="text-on-surface-variant text-xs">Vos données de paiement sont protégées par Stripe, leader mondial du paiement en ligne.</p>
+              <h5 class="font-bold text-secondary text-sm mb-1">Transparence</h5>
+              <p class="text-on-surface-variant text-xs">Les liens mènent vers des services tiers soumis à leurs propres conditions. Le virement et le formulaire ne stockent pas de carte sur ce site.</p>
             </div>
           </div>
         </div>
-
       </div>
-
     </div>
   </div>
 </div>
 
-
+<script>
 /* ─────────────────────────────────────────
    Chips de notifications
 ───────────────────────────────────────── */
@@ -537,22 +530,85 @@ document.getElementById('subscribeForm').addEventListener('submit', function (e)
 });
 </script>
 
-<!-- Stripe -->
-<script src="https://js.stripe.com/v3/"></script>
-
 <script>
-/* ─────────────────────────────────────────
-   Gestion des montants de donation
-───────────────────────────────────────── */
+(function () {
+  var btn = document.getElementById('sp-copy-iban');
+  var el = document.getElementById('sp-donation-iban');
+  if (!btn || !el) return;
+  btn.addEventListener('click', function () {
+    var t = el.textContent.trim();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(t).then(function () {
+        btn.textContent = 'Copié !';
+        setTimeout(function () { btn.textContent = 'Copier l’IBAN'; }, 2000);
+      }).catch(function () { window.prompt('Copiez l’IBAN :', t); });
+    } else {
+      window.prompt('Copiez l’IBAN :', t);
+    }
+  });
+})();
+
+(function () {
+  var form = document.getElementById('pledgeDonationForm');
+  if (!form) return;
+  var err = document.getElementById('pledgeErrorMessage');
+  var ok = document.getElementById('pledgeSuccessMessage');
+  var btn = document.getElementById('pledgeSubmitBtn');
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (err) { err.classList.add('hidden'); err.textContent = ''; }
+    if (ok) ok.classList.add('hidden');
+    var email = (document.getElementById('pledge-email') || {}).value;
+    if (!email || !email.includes('@')) {
+      if (err) { err.textContent = 'Veuillez indiquer une adresse e-mail valide.'; err.classList.remove('hidden'); }
+      return;
+    }
+    var csrf = (document.cookie.match(/csrftoken=([^;]+)/) || [])[1] || '';
+    if (btn) { btn.disabled = true; btn.textContent = 'Envoi…'; }
+    fetch('{% url "pledge_donation_notify" %}', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+      body: JSON.stringify({
+        name: (document.getElementById('pledge-name') || {}).value || '',
+        email: email,
+        amount_hint: (document.getElementById('pledge-amount') || {}).value || '',
+        method: (document.getElementById('pledge-method') || {}).value || 'virement',
+        message: (document.getElementById('pledge-msg') || {}).value || '',
+      }),
+    })
+      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+      .then(function (x) {
+        if (x.ok && x.d.success) {
+          if (ok) { ok.textContent = x.d.message || 'Merci !'; ok.classList.remove('hidden'); }
+          form.reset();
+        } else {
+          throw new Error((x.d && x.d.error) || 'Erreur');
+        }
+      })
+      .catch(function () {
+        if (err) {
+          err.textContent = 'Impossible d’envoyer (vérifiez la configuration e-mail du serveur).';
+          err.classList.remove('hidden');
+        }
+      })
+      .finally(function () {
+        if (btn) { btn.disabled = false; btn.textContent = 'Envoyer la notification à l’équipe'; }
+      });
+  });
+})();
+</script>
+
+{% if stripe_donations_enabled %}
+<script src="https://js.stripe.com/v3/"></script>
+<script>
 let selectedAmount = null;
 
 document.querySelectorAll('.donation-amount-btn').forEach(function (btn) {
   btn.addEventListener('click', function (e) {
     e.preventDefault();
-    selectedAmount = parseInt(this.getAttribute('data-amount'));
-    document.getElementById('customDonationAmount').value = selectedAmount / 100;
-    
-    // Highlight du bouton sélectionné
+    selectedAmount = parseInt(this.getAttribute('data-amount'), 10);
+    var inp = document.getElementById('customDonationAmount');
+    if (inp) inp.value = selectedAmount / 100;
     document.querySelectorAll('.donation-amount-btn').forEach(function (b) {
       b.classList.remove('bg-secondary-container', 'border-secondary', 'text-on-secondary-container');
       b.classList.add('bg-surface-container-low', 'border-outline-variant');
@@ -562,14 +618,10 @@ document.querySelectorAll('.donation-amount-btn').forEach(function (btn) {
   });
 });
 
-/* ─────────────────────────────────────────
-   Checkbox consentement donation
-───────────────────────────────────────── */
 (function () {
-  const input = document.getElementById('donation-consent');
-  const box   = document.getElementById('donation-consent-box');
+  var input = document.getElementById('donation-consent');
+  var box = document.getElementById('donation-consent-box');
   if (!input || !box) return;
-
   function sync() {
     if (input.checked) {
       box.classList.add('bg-primary', 'border-primary');
@@ -579,7 +631,6 @@ document.querySelectorAll('.donation-amount-btn').forEach(function (btn) {
       box.innerHTML = '';
     }
   }
-
   input.addEventListener('change', sync);
   box.parentElement.addEventListener('click', function () {
     input.checked = !input.checked;
@@ -588,157 +639,115 @@ document.querySelectorAll('.donation-amount-btn').forEach(function (btn) {
   sync();
 })();
 
-/* ─────────────────────────────────────────
-   Initialisation Stripe
-───────────────────────────────────────── */
-const stripe = Stripe('{{ stripe_public_key }}');
+const stripe = Stripe('{{ stripe_public_key|escapejs }}');
 const elements = stripe.elements();
 const cardElement = elements.create('card', {
   hidePostalCode: true,
   style: {
-    base: {
-      fontSize: '14px',
-      color: '#1c1c1c',
-      fontFamily: 'Roboto, sans-serif',
-      '::placeholder': {
-        color: '#999',
-      },
-    },
-    invalid: {
-      color: '#dc2626',
-    },
+    base: { fontSize: '14px', color: '#1c1c1c', fontFamily: 'system-ui, sans-serif', '::placeholder': { color: '#999' } },
+    invalid: { color: '#dc2626' },
   },
 });
 cardElement.mount('#stripe-card');
-
 cardElement.addEventListener('change', function (event) {
-  const displayError = document.getElementById('stripe-errors');
-  if (event.error) {
-    displayError.textContent = event.error.message;
-  } else {
-    displayError.textContent = '';
-  }
+  var displayError = document.getElementById('stripe-errors');
+  if (!displayError) return;
+  displayError.textContent = event.error ? event.error.message : '';
 });
 
-/* ─────────────────────────────────────────
-   Soumission du formulaire de donation
-───────────────────────────────────────── */
-document.getElementById('donationForm').addEventListener('submit', async function (e) {
-  e.preventDefault();
+var donationForm = document.getElementById('donationForm');
+if (donationForm) {
+  donationForm.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var errorDiv = document.getElementById('donationErrorMessage');
+    var successDiv = document.getElementById('donationSuccessMessage');
+    var submitBtn = document.getElementById('donationSubmitBtn');
+    if (errorDiv) { errorDiv.classList.add('hidden'); errorDiv.textContent = ''; }
+    if (successDiv) successDiv.classList.add('hidden');
 
-  const form = this;
-  const errorDiv = document.getElementById('donationErrorMessage');
-  const successDiv = document.getElementById('donationSuccessMessage');
-  const submitBtn = document.getElementById('donationSubmitBtn');
+    var customEl = document.getElementById('customDonationAmount');
+    var euros = parseFloat(customEl && customEl.value ? customEl.value : '0', 10);
+    if (!euros || euros <= 0) {
+      if (selectedAmount) euros = selectedAmount / 100;
+    }
+    var amountCents = Math.round(euros * 100);
+    var donorName = (document.getElementById('donation-name') || {}).value.trim() || 'Anonyme';
+    var donorEmail = (document.getElementById('donation-email') || {}).value.trim();
+    var donorMessage = (document.getElementById('donation-message') || {}).value.trim();
+    var consent = (document.getElementById('donation-consent') || {}).checked;
 
-  errorDiv.classList.add('hidden');
-  successDiv.classList.add('hidden');
-
-  // Récupération des données
-  let amount = parseInt(document.getElementById('customDonationAmount').value) * 100; // en centimes
-  const donorName = document.getElementById('donation-name').value.trim() || 'Anonyme';
-  const donorEmail = document.getElementById('donation-email').value.trim();
-  const donorMessage = document.getElementById('donation-message').value.trim();
-  const consent = document.getElementById('donation-consent').checked;
-
-  // Validation
-  if (!amount || amount <= 0) {
-    errorDiv.textContent = 'Veuillez entrer un montant valide.';
-    errorDiv.classList.remove('hidden');
-    return;
-  }
-  if (!donorEmail || !donorEmail.includes('@')) {
-    errorDiv.textContent = 'Veuillez entrer une adresse e-mail valide.';
-    errorDiv.classList.remove('hidden');
-    return;
-  }
-  if (!consent) {
-    errorDiv.textContent = 'Vous devez accepter les conditions pour faire un don.';
-    errorDiv.classList.remove('hidden');
-    return;
-  }
-
-  /* État chargement */
-  submitBtn.disabled = true;
-  submitBtn.innerHTML = '<span class="material-symbols-outlined text-[20px] animate-spin" aria-hidden="true">progress_activity</span> Traitement en cours…';
-
-  const csrfToken = (document.cookie.match(/csrftoken=([^;]+)/) || [])[1] || '';
-
-  try {
-    // 1. Créer la donation en base de données
-    const donationResponse = await fetch('{% url "create_donation" %}', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': csrfToken,
-      },
-      body: JSON.stringify({
-        amount: amount / 100, // en euros
-        email: donorEmail,
-        name: donorName,
-        message: donorMessage,
-      }),
-    });
-
-    if (!donationResponse.ok) throw new Error('Erreur serveur');
-    const donationData = await donationResponse.json();
-
-    if (!donationData.success) throw new Error(donationData.error);
-
-    const clientSecret = donationData.client_secret;
-    const donationId = donationData.donation_id;
-
-    // 2. Créer le Payment Intent avec Stripe
-    const { error, paymentIntent } = await stripe.confirmPayment({
-      clientSecret: clientSecret,
-      confirmParams: {
-        payment_method: {
-          card: cardElement,
-          billing_details: {
-            name: donorName,
-            email: donorEmail,
-          },
-        },
-        return_url: window.location.origin + '/donate/',
-      },
-    });
-
-    if (error) {
-      throw new Error(error.message);
+    if (!amountCents || amountCents <= 0) {
+      if (errorDiv) { errorDiv.textContent = 'Veuillez entrer un montant valide (en €).'; errorDiv.classList.remove('hidden'); }
+      return;
+    }
+    if (!donorEmail || !donorEmail.includes('@')) {
+      if (errorDiv) { errorDiv.textContent = 'E-mail invalide.'; errorDiv.classList.remove('hidden'); }
+      return;
+    }
+    if (!consent) {
+      if (errorDiv) { errorDiv.textContent = 'Veuillez accepter les conditions.'; errorDiv.classList.remove('hidden'); }
+      return;
     }
 
-    if (paymentIntent.status === 'succeeded') {
-      // 3. Confirmer la donation
-      const confirmResponse = await fetch('{% url "confirm_donation" %}', {
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Traitement…';
+    }
+    var csrfToken = (document.cookie.match(/csrftoken=([^;]+)/) || [])[1] || '';
+
+    try {
+      var donationResponse = await fetch('{% url "create_donation" %}', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': csrfToken,
-        },
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
         body: JSON.stringify({
-          donation_id: donationId,
+          amount: amountCents / 100,
+          email: donorEmail,
+          name: donorName,
+          message: donorMessage,
         }),
       });
+      var donationData = await donationResponse.json();
+      if (!donationResponse.ok || !donationData.success) throw new Error(donationData.error || 'Erreur serveur');
 
-      const confirmData = await confirmResponse.json();
+      var clientSecret = donationData.client_secret;
+      var donationId = donationData.donation_id;
 
-      if (confirmData.success) {
-        form.classList.add('hidden');
-        successDiv.classList.remove('hidden');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+      var result = await stripe.confirmPayment({
+        clientSecret: clientSecret,
+        confirmParams: {
+          payment_method: { card: cardElement, billing_details: { name: donorName, email: donorEmail } },
+          return_url: window.location.origin + '{% url "donate" %}',
+        },
+      });
+
+      if (result.error) throw new Error(result.error.message);
+
+      if (result.paymentIntent && result.paymentIntent.status === 'succeeded') {
+        var confirmResponse = await fetch('{% url "confirm_donation" %}', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+          body: JSON.stringify({ donation_id: donationId }),
+        });
+        var confirmData = await confirmResponse.json();
+        if (!confirmData.success) throw new Error(confirmData.error);
+        donationForm.classList.add('hidden');
+        if (successDiv) { successDiv.classList.remove('hidden'); }
       } else {
-        throw new Error(confirmData.error);
+        throw new Error('Paiement non confirmé');
       }
-    } else {
-      throw new Error('Paiement non confirmé');
+    } catch (err) {
+      if (errorDiv) {
+        errorDiv.textContent = err.message || 'Erreur';
+        errorDiv.classList.remove('hidden');
+      }
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Payer par carte';
+      }
     }
-  } catch (err) {
-    errorDiv.textContent = err.message || 'Une erreur est survenue. Veuillez réessayer.';
-    errorDiv.classList.remove('hidden');
-    submitBtn.disabled = false;
-    submitBtn.innerHTML = '<span class="material-symbols-outlined text-[20px]" style="font-variation-settings:\'FILL\' 1" aria-hidden="true">favorite</span> Faire un don sécurisé';
-  }
-});
+  });
+}
 </script>
+{% endif %}
 
 {% endblock %}

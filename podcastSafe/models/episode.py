@@ -1,6 +1,8 @@
 """
 Episode model for SafePlace application
 """
+import re
+
 from django.db import models
 from .category import Category
 
@@ -24,6 +26,19 @@ class Episode(models.Model):
 
     def __str__(self):
         return self.title
+
+    def get_youtube_embed_url(self):
+        """Return a youtube.com/embed/... URL for iframe, or empty string."""
+        if not self.video_url:
+            return ''
+        url = (self.video_url or '').strip()
+        m = re.search(
+            r'(?:youtube\.com/watch\?v=|youtu\.be/|youtube\.com/embed/)([a-zA-Z0-9_-]{11})',
+            url,
+        )
+        if m:
+            return f'https://www.youtube.com/embed/{m.group(1)}'
+        return ''
 
     class Meta:
         ordering = ['-created_at']

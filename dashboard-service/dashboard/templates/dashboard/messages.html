@@ -1,0 +1,159 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Gestion des Messages — Dashboard{% endblock %}
+{% block page_title %}Gestion des Messages{% endblock %}
+{% block page_subtitle %}Consultez et répondez aux messages du formulaire de contact{% endblock %}
+
+{% block topbar_actions %}
+<div class="flex items-center gap-3">
+    <form action="{% url 'mark_all_messages_read' %}" method="post" class="inline">
+        {% csrf_token %}
+        <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 bg-lime text-lime-dark font-bold rounded-full text-sm hover:shadow-lg active:scale-95 transition-all">
+            <span class="material-symbols-outlined text-base">done_all</span>
+            Tout marquer lu
+        </button>
+    </form>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="p-4 md:p-8 relative z-10">
+
+    {% if not api_connected %}
+    <div class="mb-6 p-4 bg-error-container text-on-error-container rounded-2xl flex items-center gap-3 animate-fade-in">
+        <span class="material-symbols-outlined">error</span>
+        <p>Impossible de charger les données: {{ error_message|default:"API non joignable" }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+        <div class="bg-surface/80 backdrop-blur-xl border border-outline-variant/50 rounded-2xl p-6 hover:-translate-y-1 hover:shadow-lg transition-all animate-fade-in-up" style="animation-delay: 0.1s">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-11 h-11 rounded-xl bg-primary-fixed flex items-center justify-center">
+                    <span class="material-symbols-outlined text-primary" style="font-variation-settings:'FILL' 1">mail</span>
+                </div>
+            </div>
+            <p class="text-xs font-medium text-on-surface-variant mb-1">Total messages</p>
+            <p class="text-2xl font-bold text-primary font-heading">{{ msg_stats.total|default:"0" }}</p>
+        </div>
+
+        <div class="bg-surface/80 backdrop-blur-xl border border-outline-variant/50 rounded-2xl p-6 hover:-translate-y-1 hover:shadow-lg transition-all animate-fade-in-up" style="animation-delay: 0.2s">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-11 h-11 rounded-xl bg-error-container flex items-center justify-center">
+                    <span class="material-symbols-outlined text-on-error-container" style="font-variation-settings:'FILL' 1">mark_email_unread</span>
+                </div>
+            </div>
+            <p class="text-xs font-medium text-on-surface-variant mb-1">Non lus</p>
+            <p class="text-2xl font-bold text-error font-heading">{{ msg_stats.unread|default:"0" }}</p>
+        </div>
+
+        <div class="bg-surface/80 backdrop-blur-xl border border-outline-variant/50 rounded-2xl p-6 hover:-translate-y-1 hover:shadow-lg transition-all animate-fade-in-up" style="animation-delay: 0.3s">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-11 h-11 rounded-xl bg-orange-100 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-orange-700" style="font-variation-settings:'FILL' 1">priority_high</span>
+                </div>
+            </div>
+            <p class="text-xs font-medium text-on-surface-variant mb-1">Priorité haute</p>
+            <p class="text-2xl font-bold text-orange-700 font-heading">{{ msg_stats.high_priority|default:"0" }}</p>
+        </div>
+
+        <div class="bg-surface/80 backdrop-blur-xl border border-outline-variant/50 rounded-2xl p-6 hover:-translate-y-1 hover:shadow-lg transition-all animate-fade-in-up" style="animation-delay: 0.4s">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-11 h-11 rounded-xl bg-green-100 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-green-700" style="font-variation-settings:'FILL' 1">check_circle</span>
+                </div>
+            </div>
+            <p class="text-xs font-medium text-on-surface-variant mb-1">Lus</p>
+            <p class="text-2xl font-bold text-green-700 font-heading">{{ msg_stats.read|default:"0" }}</p>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-surface/80 backdrop-blur-xl border border-outline-variant/50 rounded-2xl p-4 mb-6 animate-fade-in-up" style="animation-delay:0.5s">
+        <form method="get" class="flex flex-wrap gap-3 items-center">
+            <select name="priority" onchange="this.form.submit()" class="px-4 py-2.5 border border-outline-variant rounded-xl text-sm font-medium text-on-surface bg-white focus:outline-none focus:border-surface-tint focus:ring-2 focus:ring-surface-tint/20 transition-all">
+                <option value="">Toutes les priorités</option>
+                <option value="high" {% if request.GET.priority == 'high' %}selected{% endif %}>Haute</option>
+                <option value="normal" {% if request.GET.priority == 'normal' %}selected{% endif %}>Normale</option>
+                <option value="low" {% if request.GET.priority == 'low' %}selected{% endif %}>Basse</option>
+            </select>
+            <select name="status" onchange="this.form.submit()" class="px-4 py-2.5 border border-outline-variant rounded-xl text-sm font-medium text-on-surface bg-white focus:outline-none focus:border-surface-tint focus:ring-2 focus:ring-surface-tint/20 transition-all">
+                <option value="">Tous les statuts</option>
+                <option value="read" {% if request.GET.status == 'read' %}selected{% endif %}>Lus</option>
+                <option value="unread" {% if request.GET.status == 'unread' %}selected{% endif %}>Non lus</option>
+            </select>
+            <div class="flex items-center bg-white px-4 py-2.5 rounded-xl border border-outline-variant focus-within:border-surface-tint focus-within:ring-2 focus-within:ring-surface-tint/20 transition-all">
+                <span class="material-symbols-outlined text-on-surface-variant text-lg mr-2">search</span>
+                <input type="text" name="search" value="{{ request.GET.search }}" placeholder="Rechercher..." class="bg-transparent border-none p-0 focus:ring-0 outline-none text-sm w-full md:w-48">
+            </div>
+            {% if request.GET.search or request.GET.priority or request.GET.status %}
+            <a href="{% url 'message_management' %}" class="text-sm font-semibold text-primary hover:text-lime-dark ml-2">Réinitialiser</a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Messages List -->
+    <div class="bg-surface/80 backdrop-blur-xl border border-outline-variant/50 rounded-2xl overflow-hidden animate-fade-in-up" style="animation-delay:0.6s">
+        <div class="px-6 py-4 border-b border-outline-variant/50 bg-surface-container-low flex justify-between items-center">
+            <h2 class="font-heading font-bold text-primary text-lg">Boîte de réception</h2>
+        </div>
+        <div class="divide-y divide-outline-variant/30">
+            {% for message in messages_list %}
+            <div class="p-6 transition-colors {% if not message.read %}bg-primary/5 hover:bg-primary/10{% else %}hover:bg-surface-container-low/50{% endif %}">
+                <div class="flex flex-col md:flex-row md:items-start gap-4">
+                    <div class="flex items-center gap-4 md:w-1/4 shrink-0">
+                        <div class="w-10 h-10 rounded-full {% if not message.read %}bg-gradient-to-br from-primary to-primary-container text-white{% else %}bg-surface-container-high text-on-surface-variant{% endif %} flex items-center justify-center font-bold text-sm shrink-0">
+                            {{ message.name|first|upper }}
+                        </div>
+                        <div class="min-w-0">
+                            <h3 class="text-sm {% if not message.read %}font-bold text-primary{% else %}font-medium text-on-surface{% endif %} truncate">{{ message.name }}</h3>
+                            <p class="text-xs text-on-surface-variant truncate">{{ message.email }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 mb-1">
+                            <h4 class="text-sm {% if not message.read %}font-bold text-primary{% else %}font-semibold text-on-surface{% endif %}">{{ message.subject }}</h4>
+                            <span class="px-2 py-0.5 text-[10px] font-bold rounded-full uppercase
+                                {% if message.priority == 'high' %}bg-error-container text-on-error-container
+                                {% elif message.priority == 'normal' %}bg-primary-fixed text-primary
+                                {% else %}bg-surface-container text-on-surface-variant{% endif %}">
+                                {% if message.priority == 'high' %}Haute{% elif message.priority == 'normal' %}Normale{% else %}Basse{% endif %}
+                            </span>
+                            {% if not message.read %}
+                            <span class="px-2 py-0.5 text-[10px] font-bold rounded-full uppercase bg-lime/20 text-lime-dark">Nouveau</span>
+                            {% endif %}
+                        </div>
+                        <p class="text-sm text-on-surface-variant mb-2">{{ message.message }}</p>
+                        <p class="text-xs text-outline">{{ message.created_at }}</p>
+                    </div>
+
+                    <div class="flex items-center gap-2 shrink-0 md:ml-4 mt-4 md:mt-0">
+                        {% if not message.read %}
+                        <form action="{% url 'message_action' message.id 'read' %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="w-8 h-8 rounded-full bg-surface hover:bg-lime/20 text-primary hover:text-lime-dark flex items-center justify-center transition-colors border border-outline-variant" title="Marquer comme lu">
+                                <span class="material-symbols-outlined text-sm">mark_email_read</span>
+                            </button>
+                        </form>
+                        {% endif %}
+                        <form action="{% url 'message_action' message.id 'delete' %}" method="post" onsubmit="return confirm('Supprimer ce message ?');">
+                            {% csrf_token %}
+                            <button type="submit" class="w-8 h-8 rounded-full bg-surface hover:bg-error-container text-on-surface hover:text-error flex items-center justify-center transition-colors border border-outline-variant" title="Supprimer">
+                                <span class="material-symbols-outlined text-sm">delete</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="p-12 text-center text-on-surface-variant">
+                <span class="material-symbols-outlined text-5xl mb-3 block opacity-40">mail</span>
+                <p class="font-medium">Aucun message ne correspond à vos critères</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

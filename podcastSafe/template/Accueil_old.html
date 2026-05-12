@@ -403,11 +403,6 @@
     animation: bounceY 1.8s ease-in-out infinite;
   }
 
-  /* ── Episode cover dynamic colors ── */
-  .episode-cover {
-    background: linear-gradient(135deg, var(--cover-color, #00261b), #416900);
-  }
-  
   /* ── Recommended row ── */
   .rec-row {
     display: flex;
@@ -687,8 +682,8 @@
         {% for episode in latest_episodes %}
         <article class="ep-card" role="listitem">
           <!-- Cover -->
-          <div class="relative aspect-video flex items-center justify-center episode-cover"
-            data-cover-color="{{ episode.cover_color|default:'#00261b' }}">
+          <div class="relative aspect-video flex items-center justify-center"
+            style="background:linear-gradient(135deg,{{ episode.cover_color }},#416900)">
             <span class="material-symbols-outlined text-white/30 text-7xl">church</span>
             <button type="button"
               class="play-fab absolute inset-0 m-auto js-play-btn"
@@ -759,7 +754,7 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-5" role="list">
         {% for episode in latest_videos %}
         <article class="vid-card" role="listitem">
-          <a href="{% url 'podcast_detail' episode.pk %}" class="block relative overflow-hidden episode-cover" data-cover-color="{{ episode.cover_color|default:'#00261b' }}">
+          <a href="{% url 'podcast_detail' episode.pk %}" class="block relative overflow-hidden" style="aspect-ratio:16/9;background:linear-gradient(135deg,{{ episode.cover_color }},#416900)">
             <span class="material-symbols-outlined text-white/30 text-8xl absolute inset-0 m-auto w-fit h-fit">smart_display</span>
             <div class="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity" style="background:rgba(0,0,0,0.3)">
               <div class="w-14 h-14 rounded-full flex items-center justify-center" style="background:#9ff700">
@@ -865,8 +860,8 @@
           {% for episode in latest_episodes|slice:":4" %}
           <div class="rec-row" role="listitem">
             <a href="{% url 'podcast_detail' episode.pk %}"
-               class="w-11 h-11 rounded-xl flex items-center justify-center text-white text-sm flex-shrink-0 episode-cover"
-               data-cover-color="{{ episode.cover_color|default:'#00261b' }}">
+               class="w-11 h-11 rounded-xl flex items-center justify-center text-white text-sm flex-shrink-0"
+               style="background:linear-gradient(135deg,{{ episode.cover_color }},#416900)">
               <span class="material-symbols-outlined text-[16px]">church</span>
             </a>
             <div class="flex-1 min-w-0">
@@ -1466,18 +1461,6 @@ document.addEventListener('click', e => {
   } else {
     window.addEventListener('load', initBentoParticles);
   }
-})();
-
-/* ══════════════════════════════════════════════
-   SET CSS VARIABLES FROM DATA ATTRIBUTES
-══════════════════════════════════════════════ */
-(function() {
-  document.querySelectorAll('.episode-cover').forEach(el => {
-    const color = el.dataset.coverColor;
-    if (color) {
-      el.style.setProperty('--cover-color', color);
-    }
-  });
 })();
 
 /* ══════════════════════════════════════════════

@@ -1,0 +1,214 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Publier un Épisode — Dashboard{% endblock %}
+{% block page_title %}Publier un Épisode{% endblock %}
+{% block page_subtitle %}Ajoutez un podcast audio sur la plateforme{% endblock %}
+
+{% block content %}
+<div class="p-4 md:p-8 relative z-10">
+    <div class="max-w-6xl mx-auto space-y-8">
+
+        <!-- Existing Episodes Section -->
+        <div class="bg-surface/80 backdrop-blur-xl border border-outline-variant/50 rounded-[24px] p-6 animate-fade-in-up">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="font-heading font-bold text-primary text-lg">Épisodes Existant</h3>
+                <a href="{% url 'dashboard_home' %}" class="text-sm font-bold text-primary hover:text-lime-dark transition-colors">
+                    ← Retour au dashboard
+                </a>
+            </div>
+            
+            <div class="space-y-3" id="existing-episodes">
+                <!-- Episodes will be loaded here via JavaScript -->
+                <div class="text-center py-8 text-on-surface-variant">
+                    <span class="material-symbols-outlined text-4xl mb-2 block opacity-40">podcasts</span>
+                    <p>Chargement des épisodes...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- New Episode Form -->
+        <div class="bg-surface/80 backdrop-blur-xl border border-outline-variant/50 rounded-[24px] overflow-hidden shadow-lg animate-fade-in-up">
+            
+            <div class="bg-gradient-to-r from-primary to-primary-container p-6 flex items-center gap-4">
+                <div class="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/10">
+                    <span class="material-symbols-outlined text-white text-3xl" style="font-variation-settings:'FILL' 1">podcasts</span>
+                </div>
+                <div>
+                    <h2 class="font-heading font-bold text-white text-xl">Nouveau Podcast</h2>
+                    <p class="text-white/70 text-sm font-medium mt-0.5">Ajoutez un nouvel épisode audio</p>
+                </div>
+            </div>
+
+            <div class="p-6 md:p-8 bg-white/50">
+                <form method="post" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    <input type="hidden" name="episode_type" value="podcast">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-bold text-primary mb-2 flex items-center gap-1">
+                                Titre de l'épisode <span class="text-error">*</span>
+                            </label>
+                            <input type="text" name="title" required
+                                class="w-full px-4 py-3 border border-outline-variant rounded-xl text-sm bg-surface-container-lowest focus:outline-none focus:border-surface-tint focus:ring-4 focus:ring-surface-tint/15 transition-all"
+                                placeholder="Saison 1, Épisode 1...">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold text-primary mb-2">
+                                Catégorie
+                            </label>
+                            <select name="category" 
+                                class="w-full px-4 py-3 border border-outline-variant rounded-xl text-sm bg-surface-container-lowest focus:outline-none focus:border-surface-tint focus:ring-4 focus:ring-surface-tint/15 transition-all">
+                                <option value="">Sélectionner une catégorie (optionnel)</option>
+                                {% for cat in categories %}
+                                <option value="{{ cat.id }}">{{ cat.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-primary mb-2 flex items-center gap-1">
+                            Description <span class="text-error">*</span>
+                        </label>
+                        <textarea name="description" rows="4" required
+                            class="w-full px-4 py-3 border border-outline-variant rounded-xl text-sm bg-surface-container-lowest focus:outline-none focus:border-surface-tint focus:ring-4 focus:ring-surface-tint/15 transition-all resize-none"
+                            placeholder="Sujets abordés dans ce podcast..."></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-primary mb-2 flex items-center gap-1">
+                            URL de l'audio <span class="text-error">*</span>
+                        </label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline-variant">headphones</span>
+                            <input type="url" name="audio_url" required
+                                class="w-full pl-12 pr-4 py-3 border border-outline-variant rounded-xl text-sm bg-surface-container-lowest focus:outline-none focus:border-surface-tint focus:ring-4 focus:ring-surface-tint/15 transition-all"
+                                placeholder="Lien direct vers le fichier mp3, Spotify, etc.">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-bold text-primary mb-2">
+                                Durée (optionnel)
+                            </label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline-variant">schedule</span>
+                                <input type="text" name="duration"
+                                    class="w-full pl-12 pr-4 py-3 border border-outline-variant rounded-xl text-sm bg-surface-container-lowest focus:outline-none focus:border-surface-tint focus:ring-4 focus:ring-surface-tint/15 transition-all"
+                                    placeholder="ex: 45:30">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold text-primary mb-2">
+                                Couleur de couverture
+                            </label>
+                            <div class="flex items-center gap-4">
+                                <input type="color" name="cover_color" value="#00261b"
+                                    class="w-12 h-12 rounded-xl cursor-pointer border-none p-0 bg-transparent">
+                                <span class="text-sm font-medium text-on-surface-variant">Thème de la carte audio</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-6 border-t border-outline-variant/50">
+                        <a href="{% url 'dashboard_home' %}" class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-surface border border-outline-variant text-on-surface font-bold rounded-full text-sm hover:bg-surface-container-high transition-colors">
+                            Annuler
+                        </a>
+                        <button type="submit" class="inline-flex items-center justify-center gap-2 px-8 py-3 bg-gradient-to-r from-primary to-[#0b3d2e] text-white font-bold rounded-full text-sm hover:shadow-[0_8px_24px_rgba(0,38,27,0.3)] hover:-translate-y-0.5 active:scale-95 transition-all">
+                            <span class="material-symbols-outlined text-xl">publish</span>
+                            Publier l'épisode
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Load existing episodes
+async function loadEpisodes() {
+    try {
+        const response = await fetch('{{ main_api_url }}episodes/', {
+            headers: {
+                'X-API-KEY': 'safeplace_secret_dashboard_key_2026',
+                'Accept': 'application/json',
+            }
+        });
+        const data = await response.json();
+        
+        const container = document.getElementById('existing-episodes');
+        if (data.episodes && data.episodes.length > 0) {
+            container.innerHTML = data.episodes.map(ep => `
+                <div class="flex items-center justify-between p-4 bg-surface rounded-xl border border-outline-variant/30">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-lg episode-thumb" data-cover-color="${ep.cover_color || '#00261b'}">
+                            <span class="material-symbols-outlined text-white text-lg">${ep.episode_type === 'video' ? 'smart_display' : 'podcasts'}</span>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-sm text-primary">${ep.title}</h4>
+                            <p class="text-xs text-on-surface-variant">${ep.created_at} • ${ep.episode_type}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <a href="${ep.episode_type === 'video' ? ep.video_url : ep.audio_url}" target="_blank" class="text-sm text-primary hover:text-lime-dark transition-colors">
+                            <span class="material-symbols-outlined text-[16px]">play_arrow</span>
+                        </a>
+                        <form method="post" action="{% url 'episode_delete' 0 %}".replace('0', ep.id) onsubmit="return confirm('Supprimer cet épisode? Cette action est irréversible.');" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" class="w-8 h-8 rounded-full bg-error-container text-error hover:bg-error flex items-center justify-center transition-colors" title="Supprimer">
+                                <span class="material-symbols-outlined text-[14px]">delete</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Set CSS variables for episode thumbs
+            container.querySelectorAll('.episode-thumb').forEach(el => {
+                const color = el.dataset.coverColor;
+                if (color) {
+                    el.style.setProperty('--cover-color', color);
+                }
+            });
+        } else {
+            container.innerHTML = `
+                <div class="text-center py-8 text-on-surface-variant">
+                    <span class="material-symbols-outlined text-4xl mb-2 block opacity-40">podcasts</span>
+                    <p>Aucun épisode trouvé</p>
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Error loading episodes:', error);
+        document.getElementById('existing-episodes').innerHTML = `
+            <div class="text-center py-8 text-error">
+                <p>Erreur lors du chargement des épisodes</p>
+            </div>
+        `;
+    }
+}
+
+// Load episodes on page load
+document.addEventListener('DOMContentLoaded', loadEpisodes);
+</script>
+
+<style>
+.episode-thumb {
+    background: linear-gradient(135deg, var(--cover-color, #00261b), #416900);
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 20px;
+}
+</style>
+{% endblock %}

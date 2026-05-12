@@ -1,13 +1,13 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
-from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
 from django.conf import settings
+from django.utils.text import slugify
 import os
 import json
 
-from .models import Episode, LiveStream, Category, Donation, Subscription
+from .models import Episode, LiveStream, Category, Donation, Subscription, ContactMessage
 from .auth import owner_required
 from .stripe_handler import StripePaymentHandler
 
@@ -17,7 +17,7 @@ def send_donation_confirmation_email(donation):
     try:
         send_mail(
             'Merci pour votre don!',
-            f'Bonjour {donation.name},\n\nMerci beaucoup pour votre don de {donation.amount}€ à The SafePlace by K.\n\nVotre aide nous permet de continuer notre mission.\n\nDieu vous bénisse!\n\n✝ The SafePlace by K',
+            f'Bonjour {donation.name},\n\nMerci beaucoup pour votre don de {donation.amount}€ à The SafePlace by K.\n\nVotre aide nous permet de continuer notre mission.\n\nDieu vous bénisse!\n\nThe SafePlace by K',
             settings.DEFAULT_FROM_EMAIL,
             [donation.email],
             fail_silently=True
@@ -29,15 +29,22 @@ def send_donation_confirmation_email(donation):
 
 
 def home(request):
-    latest_episodes = Episode.objects.filter(is_published=True)[:6]
+    published = Episode.objects.filter(is_published=True)
+    latest_episodes = published.filter(episode_type='podcast')[:6]
+    latest_videos = published.filter(episode_type='video')[:4]
     live_streams = LiveStream.objects.filter(status='live')[:4]
-    featured = Episode.objects.filter(is_published=True).first()
+    featured = published.first()
     categories = Category.objects.all()
+    category_ids_by_slug = {}
+    for cat in categories:
+        category_ids_by_slug[slugify(cat.name)] = str(cat.id)
     context = {
         'latest_episodes': latest_episodes,
+        'latest_videos': latest_videos,
         'live_streams': live_streams,
         'featured': featured,
         'categories': categories,
+        'category_ids_by_slug': category_ids_by_slug,
     }
     return render(request, 'Accueil.html', context)
 
@@ -47,17 +54,53 @@ def podcasts(request):
     categories = Category.objects.all()
     selected_cat = request.GET.get('categorie')
     if selected_cat:
-        filtered_episodes = episodes.filter(category__id=selected_cat)
+        if str(selected_cat).isdigit():
+            filtered_episodes = episodes.filter(category__id=selected_cat)
+        else:
+            slug = slugify(str(selected_cat).replace('_', '-'))
+            cat_ids = [
+                c.id for c in categories
+                if slugify(c.name) == slug
+            ]
+            filtered_episodes = episodes.filter(category_id__in=cat_ids) if cat_ids else episodes.none()
     else:
         filtered_episodes = episodes
     context = {'episodes': filtered_episodes, 'categories': categories, 'selected_cat': selected_cat}
     return render(request, 'podcasts.html', context)
 
 
+def videos(request):
+    episodes = Episode.objects.filter(is_published=True, episode_type='video')
+    categories = Category.objects.all()
+    selected_cat = request.GET.get('categorie')
+    if selected_cat:
+        if str(selected_cat).isdigit():
+            filtered_episodes = episodes.filter(category__id=selected_cat)
+        else:
+            slug = slugify(str(selected_cat).replace('_', '-'))
+            cat_ids = [c.id for c in categories if slugify(c.name) == slug]
+            filtered_episodes = episodes.filter(category_id__in=cat_ids) if cat_ids else episodes.none()
+    else:
+        filtered_episodes = episodes
+    context = {'episodes': filtered_episodes, 'categories': categories, 'selected_cat': selected_cat}
+    return render(request, 'videos.html', context)
+
+
 def podcast_detail(request, pk):
     episode = get_object_or_404(Episode, pk=pk, is_published=True)
-    similar = Episode.objects.filter(is_published=True, category=episode.category).exclude(pk=pk)[:3]
-    context = {'episode': episode, 'similar_episodes': similar}
+    similar = (
+        Episode.objects.filter(
+            is_published=True,
+            episode_type=episode.episode_type,
+            category=episode.category,
+        )
+        .exclude(pk=pk)[:3]
+    )
+    context = {
+        'episode': episode,
+        'similar_episodes': similar,
+        'youtube_embed_url': episode.get_youtube_embed_url(),
+    }
     return render(request, 'podcast_detail.html', context)
 
 
@@ -92,17 +135,26 @@ def publish_episode(request):
     """Créer ou éditer un épisode"""
     if request.method == 'POST':
         try:
-            title = request.POST.get('title')
-            description = request.POST.get('description')
+            title = (request.POST.get('title') or '').strip()
+            description = (request.POST.get('description') or '').strip()
             episode_type = request.POST.get('episode_type', 'podcast')
+            if episode_type not in ('podcast', 'video'):
+                episode_type = 'podcast'
             category_id = request.POST.get('category')
-            audio_url = request.POST.get('audio_url')
-            video_url = request.POST.get('video_url')
-            duration = request.POST.get('duration')
-            cover_color = request.POST.get('cover_color', '#00261b')
-            
+            audio_url = (request.POST.get('audio_url') or '').strip()
+            video_url = (request.POST.get('video_url') or '').strip()
+            duration = (request.POST.get('duration') or '').strip()
+            cover_color = request.POST.get('cover_color', '#00261b') or '#00261b'
+
+            if not title or not description:
+                raise ValueError('Le titre et la description sont obligatoires.')
+            if episode_type == 'podcast' and not audio_url:
+                raise ValueError('Pour un podcast, renseignez une URL audio (fichier MP3 ou hébergeur).')
+            if episode_type == 'video' and not video_url:
+                raise ValueError('Pour une vidéo, renseignez une URL (YouTube, lien direct, etc.).')
+
             category = Category.objects.get(id=category_id) if category_id else None
-            
+
             episode = Episode(
                 title=title,
                 description=description,
@@ -112,10 +164,10 @@ def publish_episode(request):
                 video_url=video_url,
                 duration=duration,
                 cover_color=cover_color,
-                is_published=True
+                is_published=True,
             )
             episode.save()
-            
+
             return redirect('podcast_detail', pk=episode.id)
         except Exception as e:
             context = {'error': str(e), 'categories': Category.objects.all()}
@@ -126,28 +178,45 @@ def publish_episode(request):
     return render(request, 'publish_episode.html', context)
 
 
+def _parse_post_or_json(request):
+    """Return a dict from JSON body or form POST (for studio forms)."""
+    ct = (request.META.get('CONTENT_TYPE') or '').lower()
+    if 'application/json' in ct and request.body:
+        try:
+            return json.loads(request.body.decode('utf-8'))
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            return {}
+    return request.POST
+
+
 @owner_required
 def manage_live_streams(request):
     """Gérer les Live Streams"""
     if request.method == 'POST':
         try:
-            title = request.POST.get('title')
-            description = request.POST.get('description')
-            platform = request.POST.get('platform')
-            stream_url = request.POST.get('stream_url')
-            embed_url = request.POST.get('embed_url')
-            status = request.POST.get('status', 'scheduled')
+            data = _parse_post_or_json(request)
+            title = (data.get('title') or '').strip()
+            description = (data.get('description') or '').strip()
+            platform = (data.get('platform') or '').strip()
+            stream_url = (data.get('stream_url') or '').strip()
+            embed_url = (data.get('embed_url') or '').strip()
+            status = (data.get('status') or 'scheduled').strip()
             
+            if not title:
+                return JsonResponse({'success': False, 'error': 'Le titre est obligatoire.'})
+            if not platform:
+                return JsonResponse({'success': False, 'error': 'Choisissez une plateforme.'})
+
             live_stream = LiveStream(
                 title=title,
                 description=description,
                 platform=platform,
                 stream_url=stream_url,
                 embed_url=embed_url,
-                status=status
+                status=status,
             )
             live_stream.save()
-            
+
             return JsonResponse({'success': True, 'message': 'Live Stream créé avec succès'})
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
@@ -169,12 +238,84 @@ def subscriptions(request):
 
 
 def donate(request):
-    """Page d'abonnement / donation (formulaire d'inscription)"""
-    from .stripe_handler import STRIPE_PUBLIC_KEY
+    """Page abonnement gratuit + dons (liens gratuits, virement, option Stripe)."""
+    from django.conf import settings as dj_settings
+
+    channel_defs = [
+        ('paypal', 'PayPal', dj_settings.DONATION_PAYPAL_URL, 'Paiement sécurisé via votre compte PayPal', 'payments'),
+        ('kofi', 'Ko-fi', dj_settings.DONATION_KOFI_URL, 'Café virtuel, sans abonnement pour le site', 'local_cafe'),
+        ('tipeee', 'Tipeee', dj_settings.DONATION_TIPEEE_URL, 'Soutien récurrent ou ponctuel', 'favorite'),
+        ('utip', 'uTip', dj_settings.DONATION_UTIP_URL, 'Pourboires et objectifs', 'savings'),
+        ('buymeacoffee', 'Buy Me a Coffee', dj_settings.DONATION_BUYMEACOFFEE_URL, 'Petit don international', 'coffee'),
+    ]
+    donation_channels = []
+    for key, label, url, desc, icon in channel_defs:
+        u = (url or '').strip()
+        if u:
+            donation_channels.append(
+                {'key': key, 'label': label, 'url': u, 'description': desc, 'icon': icon}
+            )
+
+    stripe_pub = (getattr(dj_settings, 'STRIPE_PUBLIC_KEY', None) or '').strip()
+    stripe_on = bool(
+        getattr(dj_settings, 'STRIPE_DONATIONS_ENABLED', False)
+        and stripe_pub
+        and stripe_pub.startswith(('pk_live_', 'pk_test_'))
+    )
+
     context = {
-        'stripe_public_key': STRIPE_PUBLIC_KEY
+        'donation_channels': donation_channels,
+        'donation_iban': (getattr(dj_settings, 'DONATION_BANK_IBAN', '') or '').strip(),
+        'donation_bank_label': getattr(dj_settings, 'DONATION_BANK_LABEL', 'The SafePlace by K'),
+        'stripe_donations_enabled': stripe_on,
+        'stripe_public_key': stripe_pub,
     }
     return render(request, 'donate.html', context)
+
+
+@require_http_methods(["POST"])
+def pledge_donation_notify(request):
+    """Signalement gratuit d'un don (virement ou autre) — e-mail à l'équipe, sans passerelle payante."""
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Requête invalide'}, status=400)
+
+    name = (data.get('name') or '').strip() or 'Anonyme'
+    email = (data.get('email') or '').strip()
+    amount_hint = (data.get('amount_hint') or '').strip()
+    method = (data.get('method') or 'virement').strip()
+    message = (data.get('message') or '').strip()
+
+    if not email or '@' not in email:
+        return JsonResponse({'success': False, 'error': 'Une adresse e-mail valide est obligatoire.'}, status=400)
+
+    to_addr = getattr(settings, 'DONATION_NOTIFY_EMAIL', None) or (
+        settings.ADMINS[0][1] if settings.ADMINS else None
+    )
+    if not to_addr:
+        to_addr = getattr(settings, 'DEFAULT_FROM_EMAIL', None) or 'admin@safeplace.com'
+
+    body = (
+        f'Notification de don (hors carte intégrée au site)\n\n'
+        f'Nom : {name}\n'
+        f'E-mail : {email}\n'
+        f'Moyen indiqué : {method}\n'
+        f'Montant annoncé : {amount_hint or "non précisé"}\n\n'
+        f'Message :\n{message or "(aucun)"}\n'
+    )
+    try:
+        send_mail(
+            f'[SafePlace] Intent de don — {name}',
+            body,
+            settings.DEFAULT_FROM_EMAIL,
+            [to_addr],
+            fail_silently=False,
+        )
+    except Exception as exc:
+        return JsonResponse({'success': False, 'error': f"Impossible d'envoyer la notification : {exc}"}, status=500)
+
+    return JsonResponse({'success': True, 'message': 'Merci ! Nous avons bien reçu votre signalement.'})
 
 
 @require_http_methods(["POST"])
@@ -238,7 +379,17 @@ The SafePlace by K''',
 
 @require_http_methods(["POST"])
 def create_donation(request):
-    """Créer une donation via Stripe"""
+    """Créer une donation via Stripe (uniquement si activé dans les réglages)."""
+    if not getattr(settings, 'STRIPE_DONATIONS_ENABLED', False):
+        return JsonResponse(
+            {
+                'success': False,
+                'error': 'Les dons par carte sont désactivés. Utilisez PayPal, Ko-fi, le virement ou le formulaire de signalement sur la page Dons.',
+            },
+            status=400,
+        )
+    if not (getattr(settings, 'STRIPE_PUBLIC_KEY', '') or '').strip().startswith(('pk_live_', 'pk_test_')):
+        return JsonResponse({'success': False, 'error': 'Paiement par carte non configuré.'}, status=503)
     try:
         data = json.loads(request.body)
         
@@ -288,6 +439,8 @@ def create_donation(request):
 @require_http_methods(["POST"])
 def confirm_donation(request):
     """Confirmer une donation après paiement Stripe"""
+    if not getattr(settings, 'STRIPE_DONATIONS_ENABLED', False):
+        return JsonResponse({'success': False, 'error': 'Paiement par carte désactivé.'}, status=400)
     try:
         data = json.loads(request.body)
         donation_id = data.get('donation_id')
@@ -397,24 +550,39 @@ def contact(request):
             if not email or not message_text:
                 error = "Veuillez remplir tous les champs obligatoires"
             else:
-                # Envoyer l'email au propriétaire du site
                 full_name = f"{first_name} {last_name}".strip()
-                send_mail(
-                    f'Nouveau message de contact: {subject}',
-                    f'De: {full_name} ({email})\n\n{message_text}',
-                    settings.DEFAULT_FROM_EMAIL,
-                    [settings.ADMINS[0][1]] if settings.ADMINS else ['admin@safeplace.com'],
-                    fail_silently=False
+
+                # Sauvegarder en base de données
+                ContactMessage.objects.create(
+                    name=full_name,
+                    email=email,
+                    subject=subject,
+                    message=message_text,
                 )
+
+                # Envoyer l'email au propriétaire du site
+                try:
+                    send_mail(
+                        f'Nouveau message de contact: {subject}',
+                        f'De: {full_name} ({email})\n\n{message_text}',
+                        settings.DEFAULT_FROM_EMAIL,
+                        [settings.ADMINS[0][1]] if settings.ADMINS else ['admin@safeplace.com'],
+                        fail_silently=True
+                    )
+                except Exception:
+                    pass
                 
                 # Envoyer une confirmation à l'utilisateur
-                send_mail(
-                    'Votre message a été reçu',
-                    f'Bonjour {first_name},\n\nMerci de nous avoir contacté. Nous vous répondrons dans les plus brefs délais.\n\n✝ The SafePlace by K',
-                    settings.DEFAULT_FROM_EMAIL,
-                    [email],
-                    fail_silently=True
-                )
+                try:
+                    send_mail(
+                        'Votre message a été reçu',
+                        f'Bonjour {first_name},\n\nMerci de nous avoir contacté. Nous vous répondrons dans les plus brefs délais.\n\nThe SafePlace by K',
+                        settings.DEFAULT_FROM_EMAIL,
+                        [email],
+                        fail_silently=True
+                    )
+                except Exception:
+                    pass
                 
                 success = True
         except Exception as e:

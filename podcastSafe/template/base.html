@@ -72,8 +72,8 @@ tailwind.config = {
   @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.2)} }
   .pulse-dot { animation: pulse 2s cubic-bezier(0.4,0,0.6,1) infinite; }
   body { -webkit-font-smoothing: antialiased; }
-  {% block extra_css %}{% endblock %}
 </style>
+{% block extra_css %}{% endblock %}
 {% block head_extra %}{% endblock %}
 </head>
 <body class="bg-background text-on-background font-body-md text-body-md pb-20 lg:pb-24">
@@ -90,6 +90,8 @@ tailwind.config = {
         <a href="{% url 'home' %}" class="{% if request.resolver_match.url_name == 'home' %}text-primary border-b-2 border-secondary font-bold pb-1{% else %}text-on-surface-variant font-medium hover:text-secondary{% endif %} transition-colors duration-200 text-body-md">Accueil</a>
         <a href="{% url 'live' %}" class="{% if request.resolver_match.url_name == 'live' %}text-primary border-b-2 border-secondary font-bold pb-1{% else %}text-on-surface-variant font-medium hover:text-secondary{% endif %} transition-colors duration-200 text-body-md">Live</a>
         <a href="{% url 'podcasts' %}" class="{% if request.resolver_match.url_name == 'podcasts' or request.resolver_match.url_name == 'podcast_detail' %}text-primary border-b-2 border-secondary font-bold pb-1{% else %}text-on-surface-variant font-medium hover:text-secondary{% endif %} transition-colors duration-200 text-body-md">Podcasts</a>
+        <a href="{% url 'videos' %}" class="{% if request.resolver_match.url_name == 'videos' %}text-primary border-b-2 border-secondary font-bold pb-1{% else %}text-on-surface-variant font-medium hover:text-secondary{% endif %} transition-colors duration-200 text-body-md">Vidéos</a>
+        <a href="{% url 'contact' %}" class="{% if request.resolver_match.url_name == 'contact' %}text-primary border-b-2 border-secondary font-bold pb-1{% else %}text-on-surface-variant font-medium hover:text-secondary{% endif %} transition-colors duration-200 text-body-md">Contact</a>
         <a href="{% url 'about' %}" class="{% if request.resolver_match.url_name == 'about' %}text-primary border-b-2 border-secondary font-bold pb-1{% else %}text-on-surface-variant font-medium hover:text-secondary{% endif %} transition-colors duration-200 text-body-md">À Propos</a>
       </div>
     </div>
@@ -99,9 +101,6 @@ tailwind.config = {
         <input class="bg-transparent border-none focus:ring-0 w-44 ml-2 outline-none text-sm" placeholder="Rechercher..." type="text"/>
       </div>
       <a href="{% url 'subscriptions' %}" class="bg-secondary-container text-on-secondary-container font-bold px-4 py-2 rounded-full hover:shadow-lg active:scale-95 transition-all text-label-md">Faire un don</a>
-      <a href="{% url 'dashboard' %}" class="w-9 h-9 rounded-full bg-primary-container flex items-center justify-center border-2 border-primary/10 hover:border-secondary transition-colors">
-        <span class="material-symbols-outlined text-on-primary-container text-[18px]">person</span>
-      </a>
       <!-- Mobile nav toggle -->
       <button id="sp-nav-toggle" class="md:hidden flex items-center justify-center w-10 h-10 rounded-full bg-surface-container border border-outline-variant hover:bg-surface-container-high transition-colors">
         <span class="material-symbols-outlined text-primary">menu</span>
@@ -127,8 +126,11 @@ tailwind.config = {
     <a href="{% url 'live' %}" class="sp-nav__mobile-link {% if request.resolver_match.url_name == 'live' %}sp-nav__mobile-link--active{% endif %}">
       <span class="material-symbols-outlined">sensors</span>Live
     </a>
-    <a href="{% url 'podcasts' %}" class="sp-nav__mobile-link {% if request.resolver_match.url_name == 'podcasts' %}sp-nav__mobile-link--active{% endif %}">
+    <a href="{% url 'podcasts' %}" class="sp-nav__mobile-link {% if request.resolver_match.url_name == 'podcasts' or request.resolver_match.url_name == 'podcast_detail' %}sp-nav__mobile-link--active{% endif %}">
       <span class="material-symbols-outlined">headphones</span>Podcasts
+    </a>
+    <a href="{% url 'videos' %}" class="sp-nav__mobile-link {% if request.resolver_match.url_name == 'videos' %}sp-nav__mobile-link--active{% endif %}">
+      <span class="material-symbols-outlined">smart_display</span>Vidéos
     </a>
     <a href="{% url 'about' %}" class="sp-nav__mobile-link {% if request.resolver_match.url_name == 'about' %}sp-nav__mobile-link--active{% endif %}">
       <span class="material-symbols-outlined">church</span>À Propos
@@ -136,9 +138,7 @@ tailwind.config = {
     <a href="{% url 'subscriptions' %}" class="sp-nav__mobile-link">
       <span class="material-symbols-outlined">volunteer_activism</span>Dons & Abonnements
     </a>
-    <a href="{% url 'dashboard' %}" class="sp-nav__mobile-link">
-      <span class="material-symbols-outlined">dashboard</span>Creator Studio
-    </a>
+
     <a href="{% url 'contact' %}" class="sp-nav__mobile-link">
       <span class="material-symbols-outlined">mail</span>Contact
     </a>
@@ -187,18 +187,18 @@ tailwind.config = {
 </footer>
 
 <!-- Mobile Bottom Nav -->
-<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-2 py-2 bg-surface/90 backdrop-blur-xl lg:hidden z-50 shadow-[0px_-4px_20px_rgba(11,61,46,0.08)] border-t border-surface-container-high">
-  <a href="{% url 'home' %}" class="flex flex-col items-center px-3 py-1.5 rounded-full transition-all active:scale-90 {% if request.resolver_match.url_name == 'home' %}bg-secondary-container text-on-secondary-container{% else %}text-on-surface-variant{% endif %}">
-    <span class="material-symbols-outlined text-[22px]">home</span><span class="font-label-sm text-label-sm">Accueil</span>
+<nav class="fixed bottom-0 left-0 w-full grid grid-cols-4 items-center px-1 py-2 bg-surface/90 backdrop-blur-xl lg:hidden z-50 shadow-[0px_-4px_20px_rgba(11,61,46,0.08)] border-t border-surface-container-high">
+  <a href="{% url 'home' %}" class="flex flex-col items-center px-1 py-1.5 rounded-full transition-all active:scale-90 {% if request.resolver_match.url_name == 'home' %}bg-secondary-container text-on-secondary-container{% else %}text-on-surface-variant{% endif %}">
+    <span class="material-symbols-outlined text-[20px]">home</span><span class="font-label-sm text-[10px] leading-tight text-center">Accueil</span>
   </a>
-  <a href="{% url 'live' %}" class="flex flex-col items-center px-3 py-1.5 rounded-full transition-all active:scale-90 {% if request.resolver_match.url_name == 'live' %}bg-secondary-container text-on-secondary-container{% else %}text-on-surface-variant{% endif %}">
-    <span class="material-symbols-outlined text-[22px]">sensors</span><span class="font-label-sm text-label-sm">Live</span>
+  <a href="{% url 'live' %}" class="flex flex-col items-center px-1 py-1.5 rounded-full transition-all active:scale-90 {% if request.resolver_match.url_name == 'live' %}bg-secondary-container text-on-secondary-container{% else %}text-on-surface-variant{% endif %}">
+    <span class="material-symbols-outlined text-[20px]">sensors</span><span class="font-label-sm text-[10px] leading-tight text-center">Live</span>
   </a>
-  <a href="{% url 'podcasts' %}" class="flex flex-col items-center px-3 py-1.5 rounded-full transition-all active:scale-90 {% if request.resolver_match.url_name == 'podcasts' %}bg-secondary-container text-on-secondary-container{% else %}text-on-surface-variant{% endif %}">
-    <span class="material-symbols-outlined text-[22px]">headphones</span><span class="font-label-sm text-label-sm">Podcasts</span>
+  <a href="{% url 'podcasts' %}" class="flex flex-col items-center px-1 py-1.5 rounded-full transition-all active:scale-90 {% if request.resolver_match.url_name == 'podcasts' or request.resolver_match.url_name == 'podcast_detail' %}bg-secondary-container text-on-secondary-container{% else %}text-on-surface-variant{% endif %}">
+    <span class="material-symbols-outlined text-[20px]">headphones</span><span class="font-label-sm text-[10px] leading-tight text-center">Podcasts</span>
   </a>
-  <a href="{% url 'dashboard' %}" class="flex flex-col items-center px-3 py-1.5 rounded-full transition-all active:scale-90 {% if request.resolver_match.url_name == 'dashboard' %}bg-secondary-container text-on-secondary-container{% else %}text-on-surface-variant{% endif %}">
-    <span class="material-symbols-outlined text-[22px]">dashboard</span><span class="font-label-sm text-label-sm">Studio</span>
+  <a href="{% url 'videos' %}" class="flex flex-col items-center px-1 py-1.5 rounded-full transition-all active:scale-90 {% if request.resolver_match.url_name == 'videos' %}bg-secondary-container text-on-secondary-container{% else %}text-on-surface-variant{% endif %}">
+    <span class="material-symbols-outlined text-[20px]">smart_display</span><span class="font-label-sm text-[10px] leading-tight text-center">Vidéos</span>
   </a>
 </nav>
 

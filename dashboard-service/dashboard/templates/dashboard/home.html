@@ -1,0 +1,219 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Tableau de Bord — The SafePlace{% endblock %}
+{% block page_title %}Tableau de Bord{% endblock %}
+{% block page_subtitle %}Vue d'ensemble de votre plateforme{% endblock %}
+
+{% block topbar_actions %}
+<a href="{% url 'episode_publishing' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary to-primary-container text-white font-bold rounded-full text-sm hover:shadow-lg active:scale-95 transition-all">
+    <span class="material-symbols-outlined text-base">add</span>
+    Publier
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="p-4 md:p-8 relative z-10">
+    <!-- Connection Status Banner -->
+    <div class="mb-6 animate-fade-in">
+        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium
+            {% if api_connected %}bg-green-50 text-green-800 border border-green-200
+            {% else %}bg-error-container text-on-error-container border border-red-200{% endif %}">
+            <span class="material-symbols-outlined text-lg">
+                {% if api_connected %}api{% else %}cloud_off{% endif %}
+            </span>
+            {% if api_connected %}
+                API Connectée (Site Principal)
+            {% else %}
+                Erreur API: {{ error_message|default:"Connexion impossible au site principal" }}
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
+        <!-- Episodes -->
+        <div class="bg-surface/80 backdrop-blur-xl border border-outline-variant/50 rounded-2xl p-6 shadow-sm hover:-translate-y-1 hover:shadow-lg transition-all animate-fade-in-up" style="animation-delay: 0.1s;">
+            <div class="flex items-center gap-4 mb-4">
+                <div class="w-12 h-12 rounded-xl bg-lime/20 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-lime-dark" style="font-variation-settings:'FILL' 1">podcasts</span>
+                </div>
+            </div>
+            <p class="text-sm font-medium text-on-surface-variant mb-1">Total Épisodes</p>
+            <p class="text-3xl font-bold text-primary font-heading">{{ stats.total_episodes|default:"0" }}</p>
+            <p class="text-xs text-on-surface-variant mt-2 flex items-center gap-1">
+                <span class="material-symbols-outlined text-sm {% if recent_stats.new_episodes > 0 %}text-green-600{% endif %}">trending_up</span>
+                +{{ recent_stats.new_episodes|default:"0" }} ce mois
+            </p>
+        </div>
+
+        <!-- Donations -->
+        <div class="bg-surface/80 backdrop-blur-xl border border-outline-variant/50 rounded-2xl p-6 shadow-sm hover:-translate-y-1 hover:shadow-lg transition-all animate-fade-in-up" style="animation-delay: 0.2s;">
+            <div class="flex items-center gap-4 mb-4">
+                <div class="w-12 h-12 rounded-xl bg-primary-fixed flex items-center justify-center">
+                    <span class="material-symbols-outlined text-primary" style="font-variation-settings:'FILL' 1">volunteer_activism</span>
+                </div>
+            </div>
+            <p class="text-sm font-medium text-on-surface-variant mb-1">Total Dons (Complétés)</p>
+            <p class="text-3xl font-bold text-primary font-heading">€{{ stats.total_donations|default:"0" }}</p>
+            <p class="text-xs text-on-surface-variant mt-2 flex items-center gap-1">
+                <span class="material-symbols-outlined text-sm {% if recent_stats.recent_donations_amount > 0 %}text-green-600{% endif %}">trending_up</span>
+                +€{{ recent_stats.recent_donations_amount|default:"0" }} ce mois
+            </p>
+        </div>
+
+        <!-- Messages -->
+        <div class="bg-surface/80 backdrop-blur-xl border border-outline-variant/50 rounded-2xl p-6 shadow-sm hover:-translate-y-1 hover:shadow-lg transition-all animate-fade-in-up" style="animation-delay: 0.3s;">
+            <div class="flex items-center gap-4 mb-4">
+                <div class="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-orange-700" style="font-variation-settings:'FILL' 1">mail</span>
+                </div>
+            </div>
+            <p class="text-sm font-medium text-on-surface-variant mb-1">Messages</p>
+            <div class="flex items-end gap-3">
+                <p class="text-3xl font-bold text-primary font-heading">{{ stats.total_messages|default:"0" }}</p>
+                {% if stats.unread_messages > 0 %}
+                <span class="px-2.5 py-1 bg-error-container text-on-error-container text-xs font-bold rounded-full mb-1">
+                    {{ stats.unread_messages }} non lus
+                </span>
+                {% endif %}
+            </div>
+            <p class="text-xs text-on-surface-variant mt-2 flex items-center gap-1">
+                Voir la boîte de réception
+            </p>
+        </div>
+
+        <!-- Subscribers -->
+        <div class="bg-surface/80 backdrop-blur-xl border border-outline-variant/50 rounded-2xl p-6 shadow-sm hover:-translate-y-1 hover:shadow-lg transition-all animate-fade-in-up" style="animation-delay: 0.4s;">
+            <div class="flex items-center gap-4 mb-4">
+                <div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-blue-700" style="font-variation-settings:'FILL' 1">group</span>
+                </div>
+            </div>
+            <p class="text-sm font-medium text-on-surface-variant mb-1">Abonnés (Actifs)</p>
+            <p class="text-3xl font-bold text-primary font-heading">{{ stats.total_subscribers|default:"0" }}</p>
+            <p class="text-xs text-on-surface-variant mt-2 flex items-center gap-1">
+                Inscrits aux notifications
+            </p>
+        </div>
+    </div>
+
+    <!-- Lists -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+        
+        <!-- Recent Episodes -->
+        <div class="bg-surface/80 backdrop-blur-xl border border-outline-variant/50 rounded-2xl overflow-hidden animate-fade-in-up" style="animation-delay: 0.5s;">
+            <div class="px-6 py-4 border-b border-outline-variant/50 flex justify-between items-center bg-surface-container-low">
+                <h2 class="font-heading font-bold text-primary text-lg">Derniers Épisodes</h2>
+            </div>
+            <div class="divide-y divide-outline-variant/30">
+                {% for ep in recent_data.recent_episodes %}
+                <div class="p-6 hover:bg-surface-container-low/50 transition-colors">
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-primary-container/10 flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-primary">
+                                {% if ep.episode_type == 'video' %}movie{% else %}podcasts{% endif %}
+                            </span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between gap-2 mb-1">
+                                <h3 class="font-bold text-on-surface truncate">{{ ep.title }}</h3>
+                                <span class="px-2.5 py-1 text-[10px] font-bold uppercase rounded-full shrink-0
+                                    {% if ep.status == 'published' %}bg-green-100 text-green-800{% else %}bg-gray-200 text-gray-700{% endif %}">
+                                    {{ ep.status }}
+                                </span>
+                            </div>
+                            <p class="text-sm text-on-surface-variant mb-2">{{ ep.description|truncatechars:80 }}</p>
+                            <div class="flex items-center gap-4 text-xs font-medium text-outline">
+                                <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">calendar_today</span> {{ ep.created_at }}</span>
+                                <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">visibility</span> {{ ep.views }} vues</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="p-8 text-center text-on-surface-variant">
+                    <p>Aucun épisode récent</p>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="px-6 py-3 border-t border-outline-variant/50 bg-surface-container-lowest text-center">
+                <a href="{% url 'episode_publishing' %}" class="text-sm font-bold text-primary hover:text-lime-dark transition-colors inline-flex items-center gap-1">
+                    Gérer le contenu <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Recent Activity (Donations & Messages) -->
+        <div class="space-y-6 lg:space-y-8 animate-fade-in-up" style="animation-delay: 0.6s;">
+            
+            <!-- Recent Donations -->
+            <div class="bg-surface/80 backdrop-blur-xl border border-outline-variant/50 rounded-2xl overflow-hidden">
+                <div class="px-6 py-4 border-b border-outline-variant/50 flex justify-between items-center bg-surface-container-low">
+                    <h2 class="font-heading font-bold text-primary text-lg">Derniers Dons</h2>
+                </div>
+                <div class="divide-y divide-outline-variant/30">
+                    {% for don in recent_data.recent_donations %}
+                    <div class="p-4 flex items-center gap-4 hover:bg-surface-container-low/50 transition-colors">
+                        <div class="w-10 h-10 rounded-full bg-lime/20 flex items-center justify-center text-lime-dark font-bold text-sm shrink-0">
+                            {{ don.name|first|upper }}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="font-bold text-on-surface truncate">{{ don.name }}</p>
+                            <p class="text-xs text-on-surface-variant truncate">{{ don.email }}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-bold text-primary">€{{ don.amount }}</p>
+                            <p class="text-xs text-on-surface-variant">{{ don.created_at }}</p>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="p-6 text-center text-on-surface-variant">
+                        <p>Aucun don récent</p>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="px-6 py-3 border-t border-outline-variant/50 bg-surface-container-lowest text-center">
+                    <a href="{% url 'donation_management' %}" class="text-sm font-bold text-primary hover:text-lime-dark transition-colors inline-flex items-center gap-1">
+                        Tous les dons <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Recent Messages -->
+            <div class="bg-surface/80 backdrop-blur-xl border border-outline-variant/50 rounded-2xl overflow-hidden">
+                <div class="px-6 py-4 border-b border-outline-variant/50 flex justify-between items-center bg-surface-container-low">
+                    <h2 class="font-heading font-bold text-primary text-lg">Derniers Messages</h2>
+                </div>
+                <div class="divide-y divide-outline-variant/30">
+                    {% for msg in recent_data.recent_messages %}
+                    <div class="p-4 flex items-center gap-4 hover:bg-surface-container-low/50 transition-colors {% if not msg.read %}bg-primary/5{% endif %}">
+                        <div class="w-10 h-10 rounded-full {% if not msg.read %}bg-primary text-white{% else %}bg-surface-container text-on-surface-variant{% endif %} flex items-center justify-center font-bold text-sm shrink-0">
+                            {{ msg.name|first|upper }}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 mb-0.5">
+                                <p class="font-bold text-on-surface truncate">{{ msg.subject }}</p>
+                                {% if not msg.read %}
+                                <span class="w-2 h-2 rounded-full bg-error shrink-0"></span>
+                                {% endif %}
+                            </div>
+                            <p class="text-xs text-on-surface-variant truncate">{{ msg.name }} — {{ msg.created_at }}</p>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="p-6 text-center text-on-surface-variant">
+                        <p>Aucun message récent</p>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="px-6 py-3 border-t border-outline-variant/50 bg-surface-container-lowest text-center">
+                    <a href="{% url 'message_management' %}" class="text-sm font-bold text-primary hover:text-lime-dark transition-colors inline-flex items-center gap-1">
+                        Tous les messages <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+                    </a>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+{% endblock %}

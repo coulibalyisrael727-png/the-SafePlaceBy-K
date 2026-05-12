@@ -1,39 +1,28 @@
 {% extends 'base.html' %}
-{% block title %}Podcasts — The SafePlace by K{% endblock %}
+{% block title %}Vidéos — The SafePlace by K{% endblock %}
 {% block content %}
 <main class="max-w-container-max-width mx-auto px-4 md:px-margin-desktop py-10">
 
-  <!-- En-tête -->
   <div class="mb-10">
-    <h1 class="font-display-lg text-primary text-3xl md:text-5xl mb-3">Nos Podcasts</h1>
-    <p class="text-on-surface-variant text-body-lg">Épisodes pour nourrir votre foi au quotidien.</p>
+    <h1 class="font-display-lg text-primary text-3xl md:text-5xl mb-3">Nos Vidéos</h1>
+    <p class="text-on-surface-variant text-body-lg">Enseignements et contenus vidéo pour nourrir votre foi.</p>
   </div>
 
-  <!-- Filtres catégories -->
   <div class="flex gap-3 flex-wrap mb-8">
-    <a href="{% url 'podcasts' %}" class="px-5 py-2 rounded-full font-label-md border transition-all {% if not selected_cat %}bg-primary text-on-primary border-primary{% else %}bg-surface-container text-on-surface-variant border-outline-variant hover:bg-surface-container-high{% endif %}">Tous</a>
+    <a href="{% url 'videos' %}" class="px-5 py-2 rounded-full font-label-md border transition-all {% if not selected_cat %}bg-primary text-on-primary border-primary{% else %}bg-surface-container text-on-surface-variant border-outline-variant hover:bg-surface-container-high{% endif %}">Toutes</a>
     {% for cat in categories %}
     <a href="?categorie={{ cat.id }}" class="px-5 py-2 rounded-full font-label-md border transition-all {% if selected_cat == cat.id|stringformat:'s' %}bg-primary text-on-primary border-primary{% else %}bg-surface-container text-on-surface-variant border-outline-variant hover:bg-surface-container-high{% endif %}">{{ cat.name }}</a>
     {% endfor %}
   </div>
 
-  <!-- Grille épisodes -->
   {% if episodes %}
   <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-gutter">
     {% for episode in episodes %}
     <div class="bg-surface-container-low p-6 rounded-[24px] hover:shadow-[0px_4px_20px_rgba(11,61,46,0.08)] transition-all group border border-slate-100">
-      <div class="relative w-full aspect-square rounded-xl overflow-hidden mb-6">
-        <div class="w-full h-full flex items-center justify-center text-white" style="background:linear-gradient(135deg,{{ episode.cover_color }},#416900)">
-          <span class="material-symbols-outlined text-8xl text-white">church</span>
-        </div>
-        <button class="absolute bottom-4 right-4 bg-secondary text-on-secondary w-12 h-12 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300 shadow-lg js-play-btn"
-                data-audio-url="{{ episode.audio_url }}" data-title="{{ episode.title }}" data-host="{{ episode.host }}" data-color="{{ episode.cover_color }}">
-          <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">play_arrow</span>
-        </button>
-        <div class="absolute top-4 left-4">
-          <span class="bg-black/50 text-white px-3 py-1 rounded-full text-xs font-bold backdrop-blur-md">Ép. {{ forloop.counter }}</span>
-        </div>
-      </div>
+      <a href="{% url 'podcast_detail' episode.pk %}" class="relative w-full aspect-video rounded-xl overflow-hidden mb-6 block" style="background:linear-gradient(135deg,{{ episode.cover_color }},#416900)">
+        <span class="material-symbols-outlined text-white text-7xl absolute inset-0 m-auto w-fit h-fit opacity-90 group-hover:scale-105 transition-transform">smart_display</span>
+        <span class="absolute top-4 left-4 bg-black/50 text-white px-3 py-1 rounded-full text-xs font-bold backdrop-blur-md">Vidéo</span>
+      </a>
       <div class="flex items-center justify-between mb-2">
         <span class="text-secondary font-label-md px-3 py-1 bg-secondary-container rounded-full text-xs">{{ episode.category.name|default:"Général" }}</span>
         <span class="text-on-surface-variant text-label-sm">{{ episode.duration|default:"—" }}</span>
@@ -49,7 +38,7 @@
           </div>
         </div>
         <a href="{% url 'podcast_detail' episode.pk %}" class="flex items-center gap-1 text-secondary hover:underline font-bold text-sm">
-          Écouter <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+          Regarder <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
         </a>
       </div>
     </div>
@@ -58,10 +47,10 @@
   {% else %}
   <div class="text-center py-24">
     <div class="w-24 h-24 rounded-full bg-surface-container mx-auto mb-6 flex items-center justify-center">
-      <span class="material-symbols-outlined text-6xl text-primary">church</span>
+      <span class="material-symbols-outlined text-6xl text-primary">smart_display</span>
     </div>
-    <h2 class="font-headline-lg text-primary mb-3">Bientôt disponible</h2>
-    <p class="text-on-surface-variant mb-6 max-w-md mx-auto">Nos épisodes sont en cours de préparation. Revenez bientôt pour découvrir notre contenu chrétien.</p>
+    <h2 class="font-headline-lg text-primary mb-3">Vidéos à venir</h2>
+    <p class="text-on-surface-variant mb-6 max-w-md mx-auto">Publiez une vidéo depuis le studio (compte administrateur) en collant une URL YouTube, ou revenez bientôt.</p>
     <a href="{% url 'subscriptions' %}" class="bg-secondary-container text-on-secondary-container font-bold px-6 py-3 rounded-full hover:shadow-lg transition-all">Être notifié</a>
   </div>
   {% endif %}

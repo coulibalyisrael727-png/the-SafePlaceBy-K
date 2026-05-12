@@ -1,0 +1,148 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Gestion des Lives — Dashboard{% endblock %}
+{% block page_title %}Gestion des Lives{% endblock %}
+{% block page_subtitle %}Planifiez et gérez vos émissions en direct{% endblock %}
+
+{% block topbar_actions %}
+<button onclick="document.getElementById('new-live-modal').classList.remove('hidden')" class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary to-primary-container text-white font-bold rounded-full text-sm hover:shadow-lg active:scale-95 transition-all">
+    <span class="material-symbols-outlined text-base">add</span>
+    Nouveau Live
+</button>
+{% endblock %}
+
+{% block content %}
+<div class="p-4 md:p-8 relative z-10">
+    
+    {% if not api_connected %}
+    <div class="mb-6 p-4 bg-error-container text-on-error-container rounded-2xl flex items-center gap-3 animate-fade-in">
+        <span class="material-symbols-outlined">error</span>
+        <p>Impossible de charger les données: {{ error_message|default:"API non joignable" }}</p>
+    </div>
+    {% endif %}
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for live in livestreams %}
+        <div class="bg-surface/80 backdrop-blur-xl border border-outline-variant/50 rounded-2xl overflow-hidden shadow-sm hover:-translate-y-1 hover:shadow-lg transition-all animate-fade-in-up flex flex-col">
+            <!-- Header -->
+            <div class="p-5 border-b border-outline-variant/30 flex justify-between items-start 
+                {% if live.status == 'live' %}bg-error/5
+                {% elif live.status == 'scheduled' %}bg-primary/5
+                {% else %}bg-surface-container-low{% endif %}">
+                
+                <div class="flex items-center gap-2">
+                    {% if live.platform == 'youtube' %}
+                    <div class="w-8 h-8 rounded-full bg-[#ff0000]/10 flex items-center justify-center text-[#ff0000]"><span class="material-symbols-outlined text-sm">smart_display</span></div>
+                    {% elif live.platform == 'facebook' %}
+                    <div class="w-8 h-8 rounded-full bg-[#1877F2]/10 flex items-center justify-center text-[#1877F2]"><span class="material-symbols-outlined text-sm">facebook</span></div>
+                    {% else %}
+                    <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary"><span class="material-symbols-outlined text-sm">public</span></div>
+                    {% endif %}
+                    <span class="text-xs font-bold text-on-surface-variant uppercase tracking-wider">{{ live.platform_display }}</span>
+                </div>
+                
+                <span class="px-2.5 py-1 text-[10px] font-bold rounded-full uppercase flex items-center gap-1
+                    {% if live.status == 'live' %}bg-error text-white animate-pulse
+                    {% elif live.status == 'scheduled' %}bg-primary-fixed text-primary
+                    {% else %}bg-surface-container-high text-on-surface-variant{% endif %}">
+                    {% if live.status == 'live' %}<span class="w-1.5 h-1.5 rounded-full bg-white"></span>{% endif %}
+                    {{ live.status_display }}
+                </span>
+            </div>
+            
+            <!-- Body -->
+            <div class="p-5 flex-1 flex flex-col">
+                <h3 class="font-heading font-bold text-primary text-lg leading-tight mb-2">{{ live.title }}</h3>
+                <p class="text-sm text-on-surface-variant line-clamp-2 mb-4">{{ live.description }}</p>
+                
+                <div class="mt-auto space-y-2">
+                    {% if live.scheduled_at %}
+                    <div class="flex items-center gap-2 text-xs font-medium text-outline">
+                        <span class="material-symbols-outlined text-sm">event</span>
+                        {{ live.scheduled_at }}
+                    </div>
+                    {% endif %}
+                    {% if live.status == 'live' %}
+                    <div class="flex items-center gap-2 text-xs font-medium text-error">
+                        <span class="material-symbols-outlined text-sm">visibility</span>
+                        {{ live.viewers_count }} spectateurs
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Footer Actions -->
+            <div class="p-4 border-t border-outline-variant/30 bg-surface-container-lowest flex justify-between items-center">
+                <a href="{{ live.stream_url }}" target="_blank" class="text-xs font-bold text-primary hover:text-lime-dark transition-colors inline-flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm">open_in_new</span> Lien direct
+                </a>
+                
+                <form action="{% url 'live_delete' live.id %}" method="post" onsubmit="return confirm('Voulez-vous vraiment supprimer ce live ?');" class="inline">
+                    {% csrf_token %}
+                    <button type="submit" class="w-8 h-8 rounded-full hover:bg-error-container text-outline hover:text-error flex items-center justify-center transition-colors">
+                        <span class="material-symbols-outlined text-sm">delete</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full py-12 bg-surface/50 border border-dashed border-outline-variant rounded-2xl flex flex-col items-center justify-center text-on-surface-variant">
+            <span class="material-symbols-outlined text-5xl mb-3 opacity-30">sensors_off</span>
+            <p class="font-medium">Aucun live programmé ou en cours</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Create Modal -->
+    <div id="new-live-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-primary/40 backdrop-blur-sm hidden">
+        <div class="bg-surface rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-fade-in-up">
+            <div class="px-6 py-4 border-b border-outline-variant/50 bg-surface-container-low flex justify-between items-center">
+                <h2 class="font-heading font-bold text-primary text-lg">Nouveau Live Stream</h2>
+                <button onclick="document.getElementById('new-live-modal').classList.add('hidden')" class="w-8 h-8 rounded-full hover:bg-outline-variant/30 flex items-center justify-center text-on-surface transition-colors">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            
+            <form method="post" class="p-6 space-y-4">
+                {% csrf_token %}
+                <div>
+                    <label class="block text-xs font-bold text-primary mb-1">Titre <span class="text-error">*</span></label>
+                    <input type="text" name="title" required class="w-full px-3 py-2 border border-outline-variant rounded-lg text-sm focus:border-surface-tint focus:ring-2 focus:ring-surface-tint/20 outline-none">
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-bold text-primary mb-1">Plateforme</label>
+                    <select name="platform" class="w-full px-3 py-2 border border-outline-variant rounded-lg text-sm focus:border-surface-tint focus:ring-2 focus:ring-surface-tint/20 outline-none">
+                        {% for plat in platforms %}
+                        <option value="{{ plat.value }}">{{ plat.label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-primary mb-1">Lien de la diffusion <span class="text-error">*</span></label>
+                    <input type="url" name="stream_url" required placeholder="https://youtube.com/live/..." class="w-full px-3 py-2 border border-outline-variant rounded-lg text-sm focus:border-surface-tint focus:ring-2 focus:ring-surface-tint/20 outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-primary mb-1">Description</label>
+                    <textarea name="description" rows="3" class="w-full px-3 py-2 border border-outline-variant rounded-lg text-sm focus:border-surface-tint focus:ring-2 focus:ring-surface-tint/20 outline-none resize-none"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-primary mb-1">Statut Initial</label>
+                    <select name="status" class="w-full px-3 py-2 border border-outline-variant rounded-lg text-sm focus:border-surface-tint focus:ring-2 focus:ring-surface-tint/20 outline-none">
+                        <option value="scheduled">Programmé</option>
+                        <option value="live">En Direct (Lancer maintenant)</option>
+                    </select>
+                </div>
+
+                <div class="pt-4 flex justify-end gap-3 border-t border-outline-variant/30">
+                    <button type="button" onclick="document.getElementById('new-live-modal').classList.add('hidden')" class="px-4 py-2 bg-surface-container hover:bg-surface-container-high rounded-full text-sm font-medium transition-colors">Annuler</button>
+                    <button type="submit" class="px-5 py-2 bg-primary hover:bg-primary-container text-white rounded-full text-sm font-bold transition-colors">Créer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

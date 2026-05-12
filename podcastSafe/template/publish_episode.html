@@ -55,11 +55,13 @@
             <div class="grid grid-cols-2 gap-4">
               <label class="flex items-center p-4 border-2 border-outline rounded-xl cursor-pointer hover:bg-surface-container-low transition-all" onclick="document.querySelector('input[name=episode_type][value=podcast]').click()">
                 <input type="radio" name="episode_type" value="podcast" checked class="mr-3">
-                <span class="font-label-md">[MIC] Podcast</span>
+                <span class="material-symbols-outlined mr-2 text-primary">mic</span>
+                <span class="font-label-md">Podcast</span>
               </label>
               <label class="flex items-center p-4 border-2 border-outline rounded-xl cursor-pointer hover:bg-surface-container-low transition-all" onclick="document.querySelector('input[name=episode_type][value=video]').click()">
                 <input type="radio" name="episode_type" value="video" class="mr-3">
-                <span class="font-label-md">[VIDEO] Vidéo</span>
+                <span class="material-symbols-outlined mr-2 text-primary">smart_display</span>
+                <span class="font-label-md">Vidéo</span>
               </label>
             </div>
           </div>
@@ -92,14 +94,15 @@
           <!-- URLs de contenu -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block font-label-md text-on-surface mb-2 text-sm">URL Audio</label>
-              <input type="url" name="audio_url" placeholder="https://..."
+              <label class="block font-label-md text-on-surface mb-2 text-sm">URL Audio (podcast)</label>
+              <input type="url" name="audio_url" placeholder="https://... (fichier .mp3 ou flux)"
                      class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-secondary/30 outline-none bg-surface-container-low font-body-md"/>
             </div>
             <div>
-              <label class="block font-label-md text-on-surface mb-2 text-sm">URL Vidéo</label>
-              <input type="url" name="video_url" placeholder="https://..."
+              <label class="block font-label-md text-on-surface mb-2 text-sm">URL Vidéo (YouTube ou direct)</label>
+              <input type="url" name="video_url" placeholder="https://www.youtube.com/watch?v=..."
                      class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-secondary/30 outline-none bg-surface-container-low font-body-md"/>
+              <p class="text-label-sm text-on-surface-variant mt-2">Pour une <strong>vidéo</strong>, collez le lien d’une vidéo YouTube (nous affichons le lecteur intégré). Pour un <strong>podcast</strong>, renseignez surtout l’URL audio.</p>
             </div>
           </div>
 

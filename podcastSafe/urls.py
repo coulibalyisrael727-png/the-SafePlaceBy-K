@@ -7,6 +7,7 @@ from .dashboard_urls import urlpatterns as dashboard_urlpatterns
 urlpatterns = [
     path('', views.home, name='home'),
     path('podcasts/', views.podcasts, name='podcasts'),
+    path('videos/', views.videos, name='videos'),
     path('podcasts/<int:pk>/', views.podcast_detail, name='podcast_detail'),
     path('live/', views.live, name='live'),
     # (ancien studio exposé) -> gardé pour compatibilité
@@ -18,6 +19,7 @@ urlpatterns = [
     path('donate/', views.donate, name='donate'),
     path('api/subscription/create/', views.create_subscription, name='create_subscription'),
     path('api/donation/create/', views.create_donation, name='create_donation'),
+    path('api/donation/pledge-notify/', views.pledge_donation_notify, name='pledge_donation_notify'),
     path('api/donation/confirm/', views.confirm_donation, name='confirm_donation'),
     path('api/stripe/webhook/', views.stripe_webhook, name='stripe_webhook'),
 

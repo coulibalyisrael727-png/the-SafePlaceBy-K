@@ -1,251 +1,1021 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block title %}Creator Studio — The SafePlace by K{% endblock %}
-{% block content %}
-<div class="flex min-h-screen">
 
-  <!-- Sidebar Studio -->
-  <aside class="bg-surface-container-low w-64 hidden lg:flex flex-col h-screen p-6 gap-4 sticky top-0 shrink-0">
-    <div class="mb-8">
-      <h1 class="font-headline-md font-bold text-primary">Creator Studio</h1>
-      <p class="font-label-md text-on-surface-variant text-sm">Gérer votre contenu</p>
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+
+<style>
+  /* ── SafePlace Design Tokens ── */
+  :root {
+    --sp-lime:         #9ff700;
+    --sp-lime-dim:     #7bc400;
+    --sp-lime-dark:    #416900;
+    --sp-forest:       #00261b;
+    --sp-forest-mid:   #0b3d2e;
+    --sp-forest-light: #1a5c42;
+    --sp-surface:      #f4f6f0;
+    --sp-surface-card: #ffffff;
+    --sp-surface-low:  #eef0ea;
+    --sp-text:         #00261b;
+    --sp-text-muted:   #5a7060;
+    --sp-text-dim:     #8fa894;
+    --sp-border:       rgba(0,38,27,0.1);
+    --sp-border-hover: rgba(0,38,27,0.18);
+    --sp-radius-sm:    8px;
+    --sp-radius-md:    12px;
+    --sp-radius-lg:    16px;
+    --sp-shadow:       0 4px 20px rgba(0,38,27,0.06);
+  }
+
+  /* ── Reset scoped to dashboard ── */
+  #sp-dashboard *, #sp-dashboard *::before, #sp-dashboard *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  #sp-dashboard {
+    font-family: 'Poppins', sans-serif;
+    background: var(--sp-surface);
+    color: var(--sp-text);
+    font-size: 14px;
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ── Material Symbols ── */
+  #sp-dashboard .mso {
+    font-family: 'Material Symbols Outlined';
+    font-weight: 400;
+    font-style: normal;
+    font-size: 20px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+    font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+    user-select: none;
+  }
+  #sp-dashboard .mso.fill {
+    font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+
+  /* ══════════════════════════════
+     SIDEBAR
+  ══════════════════════════════ */
+  #sp-dashboard .sp-sidebar {
+    width: 240px;
+    background: var(--sp-forest);
+    display: flex;
+    flex-direction: column;
+    padding: 24px 14px;
+    gap: 2px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+
+  @media (max-width: 1024px) {
+    #sp-dashboard .sp-sidebar { display: none; }
+  }
+
+  .sp-sidebar-logo {
+    padding: 4px 10px 20px;
+    border-bottom: 1px solid rgba(159,247,0,0.12);
+    margin-bottom: 10px;
+  }
+  .sp-sidebar-logo h1 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--sp-lime);
+    letter-spacing: 0.02em;
+  }
+  .sp-sidebar-logo p {
+    font-size: 11px;
+    color: rgba(159,247,0,0.45);
+    margin-top: 3px;
+    font-weight: 300;
+  }
+
+  .sp-nav-section {
+    font-size: 10px;
+    font-weight: 600;
+    color: rgba(159,247,0,0.3);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 14px 10px 4px;
+  }
+
+  .sp-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px;
+    border-radius: var(--sp-radius-sm);
+    color: rgba(255,255,255,0.5);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 400;
+    transition: background 0.15s, color 0.15s;
+  }
+  .sp-nav-item:hover {
+    background: rgba(159,247,0,0.08);
+    color: rgba(255,255,255,0.85);
+  }
+  .sp-nav-item.active {
+    background: rgba(159,247,0,0.14);
+    color: var(--sp-lime);
+    font-weight: 600;
+  }
+  .sp-nav-item .mso { font-size: 18px; }
+
+  .sp-sidebar-cta {
+    margin-top: auto;
+    padding-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .sp-btn-cta {
+    background: var(--sp-lime);
+    color: var(--sp-forest);
+    padding: 12px;
+    border-radius: var(--sp-radius-md);
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    border: none;
+    text-decoration: none;
+    transition: opacity 0.2s;
+  }
+  .sp-btn-cta:hover { opacity: 0.88; }
+
+  .sp-sidebar-footer {
+    border-top: 1px solid rgba(159,247,0,0.1);
+    padding-top: 12px;
+    margin-top: 4px;
+  }
+
+  /* ══════════════════════════════
+     MAIN
+  ══════════════════════════════ */
+  #sp-dashboard .sp-main {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    background: var(--sp-surface);
+  }
+
+  /* ── Topbar ── */
+  .sp-topbar {
+    background: rgba(244,246,240,0.92);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    padding: 12px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--sp-border);
+  }
+
+  .sp-topbar-left { display: flex; align-items: center; gap: 14px; }
+
+  .sp-topbar-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--sp-forest);
+  }
+
+  .sp-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--sp-surface-low);
+    border: 1px solid var(--sp-border);
+    border-radius: 24px;
+    padding: 7px 16px;
+  }
+  .sp-search input {
+    border: none;
+    background: transparent;
+    outline: none;
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    color: var(--sp-text);
+    width: 200px;
+  }
+  .sp-search input::placeholder { color: var(--sp-text-dim); }
+
+  @media (max-width: 768px) { .sp-search { display: none; } }
+
+  .sp-topbar-right { display: flex; align-items: center; gap: 12px; }
+
+  .sp-live-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(159,247,0,0.13);
+    color: var(--sp-lime-dark);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid rgba(159,247,0,0.28);
+  }
+  .sp-live-dot {
+    width: 7px;
+    height: 7px;
+    background: #ef4444;
+    border-radius: 50%;
+    animation: sp-pulse 1.5s infinite;
+  }
+  @keyframes sp-pulse {
+    0%,100% { opacity:1; transform:scale(1); }
+    50%      { opacity:.55; transform:scale(.82); }
+  }
+
+  .sp-icon-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--sp-radius-sm);
+    background: var(--sp-surface-low);
+    border: 1px solid var(--sp-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--sp-text);
+    position: relative;
+    transition: background 0.15s;
+  }
+  .sp-icon-btn:hover { background: #e2e5db; }
+
+  .sp-notif-dot {
+    width: 6px;
+    height: 6px;
+    background: #ef4444;
+    border-radius: 50%;
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    border: 1.5px solid var(--sp-surface);
+  }
+
+  .sp-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--sp-radius-sm);
+    background: var(--sp-forest);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--sp-lime);
+    cursor: pointer;
+    border: 2px solid rgba(159,247,0,0.25);
+  }
+
+  /* ── Content wrapper ── */
+  .sp-content {
+    padding: 28px;
+    flex: 1;
+  }
+  @media (max-width: 640px) { .sp-content { padding: 16px; } }
+
+  /* ══════════════════════════════
+     STATS GRID
+  ══════════════════════════════ */
+  .sp-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 768px) {
+    .sp-stats-grid { grid-template-columns: 1fr; }
+  }
+
+  .sp-stat-card {
+    background: var(--sp-surface-card);
+    border: 1px solid var(--sp-border);
+    border-radius: var(--sp-radius-lg);
+    padding: 20px 22px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--sp-shadow);
+  }
+  .sp-stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--sp-lime), var(--sp-lime-dark));
+  }
+
+  .sp-stat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .sp-stat-label {
+    font-size: 12px;
+    color: var(--sp-text-muted);
+    font-weight: 500;
+  }
+  .sp-stat-icon {
+    font-size: 18px;
+    color: var(--sp-lime-dark);
+    background: rgba(159,247,0,0.11);
+    border-radius: 7px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .sp-stat-number {
+    font-size: 34px;
+    font-weight: 800;
+    color: var(--sp-forest);
+    line-height: 1;
+    display: inline;
+  }
+  .sp-stat-growth {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--sp-lime-dark);
+    background: rgba(159,247,0,0.14);
+    padding: 2px 8px;
+    border-radius: 12px;
+    margin-left: 8px;
+  }
+  .sp-stat-bar-track {
+    width: 100%;
+    height: 4px;
+    background: var(--sp-surface-low);
+    border-radius: 4px;
+    margin-top: 16px;
+    overflow: hidden;
+  }
+  .sp-stat-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--sp-lime), var(--sp-lime-dark));
+    border-radius: 4px;
+    width: 0;
+    transition: width 1.2s cubic-bezier(.4,0,.2,1);
+  }
+
+  /* ══════════════════════════════
+     MAIN GRID (2 col)
+  ══════════════════════════════ */
+  .sp-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 16px;
+    align-items: start;
+  }
+  @media (max-width: 1024px) {
+    .sp-grid-2 { grid-template-columns: 1fr; }
+  }
+
+  .sp-left  { display: flex; flex-direction: column; gap: 16px; }
+  .sp-right { display: flex; flex-direction: column; gap: 16px; }
+
+  /* ── Generic Card ── */
+  .sp-card {
+    background: var(--sp-surface-card);
+    border: 1px solid var(--sp-border);
+    border-radius: var(--sp-radius-lg);
+    padding: 22px;
+    box-shadow: var(--sp-shadow);
+  }
+
+  .sp-card-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--sp-forest);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .sp-card-link {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--sp-lime-dark);
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .sp-card-link:hover { text-decoration: underline; }
+
+  /* ── Upload Zone ── */
+  .sp-upload-zone {
+    border: 2px dashed rgba(159,247,0,0.32);
+    border-radius: var(--sp-radius-md);
+    padding: 36px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    background: rgba(159,247,0,0.03);
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .sp-upload-zone:hover {
+    border-color: var(--sp-lime);
+    background: rgba(159,247,0,0.06);
+  }
+  .sp-upload-icon {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: rgba(159,247,0,0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 14px;
+    transition: transform 0.2s;
+  }
+  .sp-upload-zone:hover .sp-upload-icon { transform: scale(1.08); }
+  .sp-upload-icon .mso { font-size: 26px; color: var(--sp-lime-dark); }
+
+  .sp-upload-zone h4 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--sp-forest);
+    margin-bottom: 6px;
+  }
+  .sp-upload-zone p {
+    font-size: 12px;
+    color: var(--sp-text-muted);
+    margin-bottom: 18px;
+  }
+
+  .sp-btn-lime {
+    background: var(--sp-lime);
+    color: var(--sp-forest);
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 10px 26px;
+    border-radius: 24px;
+    border: none;
+    cursor: pointer;
+    display: inline-block;
+    text-decoration: none;
+    transition: opacity 0.2s, transform 0.15s;
+  }
+  .sp-btn-lime:hover { opacity: .9; transform: scale(1.02); }
+
+  /* ── Episode list ── */
+  .sp-ep-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .sp-ep-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 12px;
+    border-radius: var(--sp-radius-sm);
+    border: 1px solid var(--sp-border);
+    transition: background 0.15s;
+  }
+  .sp-ep-item:hover { background: var(--sp-surface-low); }
+
+  .sp-ep-thumb {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--cover-color, var(--primary)), #416900);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+  }
+  .episode-thumb {
+    background: linear-gradient(135deg, var(--cover-color, #0b3d2e), #416900);
+  }
+  .sp-ep-thumb .mso { font-size: 22px; color: var(--sp-lime); }
+
+  .sp-ep-info { flex: 1; min-width: 0; }
+  .sp-ep-info h4 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--sp-forest);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .sp-ep-info p {
+    font-size: 11px;
+    color: var(--sp-text-muted);
+    margin-top: 2px;
+  }
+
+  .sp-ep-actions { display: flex; gap: 2px; flex-shrink: 0; }
+  .sp-action-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--sp-text-muted);
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+  }
+  .sp-action-btn:hover { background: var(--sp-surface-low); color: var(--sp-forest); }
+  .sp-action-btn .mso { font-size: 17px; }
+
+  /* ── Empty state ── */
+  .sp-empty {
+    text-align: center;
+    padding: 40px 16px;
+  }
+  .sp-empty-icon {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: var(--sp-surface-low);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 14px;
+  }
+  .sp-empty-icon .mso { font-size: 28px; color: var(--sp-lime-dark); }
+  .sp-empty h4 { font-size: 14px; font-weight: 700; color: var(--sp-forest); margin-bottom: 6px; }
+  .sp-empty p { font-size: 12px; color: var(--sp-text-muted); }
+
+  /* ══════════════════════════════
+     RIGHT COLUMN CARDS
+  ══════════════════════════════ */
+
+  /* Tips card — dark */
+  .sp-tips-card {
+    background: linear-gradient(140deg, var(--sp-forest) 0%, var(--sp-forest-mid) 100%);
+    border-radius: var(--sp-radius-lg);
+    padding: 22px;
+    position: relative;
+    overflow: hidden;
+  }
+  .sp-tips-card::after {
+    content: '';
+    position: absolute;
+    top: -50px; right: -50px;
+    width: 130px; height: 130px;
+    border-radius: 50%;
+    background: rgba(159,247,0,0.06);
+    pointer-events: none;
+  }
+  .sp-tips-card h3 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--sp-lime);
+    margin-bottom: 10px;
+  }
+  .sp-tips-card p {
+    font-size: 12px;
+    color: rgba(255,255,255,0.6);
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+  .sp-btn-glass {
+    display: block;
+    text-align: center;
+    text-decoration: none;
+    background: rgba(159,247,0,0.13);
+    color: var(--sp-lime);
+    font-family: 'Poppins', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 11px;
+    border-radius: var(--sp-radius-sm);
+    border: 1px solid rgba(159,247,0,0.22);
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .sp-btn-glass:hover { background: rgba(159,247,0,0.2); }
+
+  /* Retention chart */
+  .sp-chart-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    height: 110px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--sp-border);
+    margin-bottom: 8px;
+  }
+  .sp-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+  .sp-bar {
+    width: 100%;
+    border-radius: 4px 4px 0 0;
+    background: rgba(159,247,0,0.18);
+    transition: height 0.9s cubic-bezier(.4,0,.2,1);
+  }
+  .sp-bar.sp-bar-hi { background: var(--sp-lime); }
+  .sp-bar-label { font-size: 10px; color: var(--sp-text-dim); font-weight: 500; }
+
+  /* Geo */
+  .sp-geo-item { margin-bottom: 12px; }
+  .sp-geo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+  }
+  .sp-geo-name { font-size: 13px; color: var(--sp-forest); }
+  .sp-geo-pct  { font-size: 12px; font-weight: 700; color: var(--sp-lime-dark); }
+  .sp-geo-track {
+    width: 100%;
+    height: 5px;
+    background: var(--sp-surface-low);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .sp-geo-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--sp-lime), var(--sp-lime-dark));
+    border-radius: 4px;
+    width: 0;
+    transition: width 1.1s cubic-bezier(.4,0,.2,1);
+  }
+</style>
+
+<!-- ═══════════════════════════════════════
+     DASHBOARD WRAPPER
+════════════════════════════════════════ -->
+<div id="sp-dashboard">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sp-sidebar">
+    <div class="sp-sidebar-logo">
+      <h1>Creator Studio</h1>
+      <p>Gérer votre contenu</p>
     </div>
-    <nav class="flex-1 flex flex-col gap-2">
-      <a href="{% url 'dashboard' %}" class="flex items-center gap-3 px-4 py-3 bg-secondary-container text-on-secondary-container rounded-lg font-bold transition-all cursor-pointer">
-        <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">leaderboard</span>
-        <span class="font-label-md">Analytique</span>
+
+    <span class="sp-nav-section">Principal</span>
+
+    <a href="{% url 'dashboard' %}" class="sp-nav-item active">
+      <span class="mso fill">leaderboard</span>
+      Analytique
+    </a>
+    <a href="{% url 'publish_episode' %}" class="sp-nav-item">
+      <span class="mso">video_library</span>
+      Publier un épisode
+    </a>
+    <a href="{% url 'podcasts' %}" class="sp-nav-item">
+      <span class="mso">headphones</span>
+      Bibliothèque podcasts
+    </a>
+    <a href="{% url 'videos' %}" class="sp-nav-item">
+      <span class="mso">smart_display</span>
+      Vidéos
+    </a>
+    <a href="{% url 'live' %}" class="sp-nav-item">
+      <span class="mso">sensors</span>
+      Live Studio
+    </a>
+
+    <span class="sp-nav-section">Gestion</span>
+
+    <a href="{% url 'subscriptions' %}" class="sp-nav-item">
+      <span class="mso">payments</span>
+      Dons &amp; Abonnements
+    </a>
+    <a href="{% url 'about' %}" class="sp-nav-item">
+      <span class="mso">settings</span>
+      Paramètres
+    </a>
+
+    <div class="sp-sidebar-cta">
+      <a href="{% url 'publish_episode' %}" class="sp-btn-cta">
+        <span class="mso" style="font-size:16px">add_circle</span>
+        Publier un épisode
       </a>
-      <a href="{% url 'podcasts' %}" class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all cursor-pointer">
-        <span class="material-symbols-outlined">video_library</span>
-        <span class="font-label-md">Bibliothèque</span>
-      </a>
-      <a href="{% url 'live' %}" class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all cursor-pointer">
-        <span class="material-symbols-outlined">sensors</span>
-        <span class="font-label-md">Live Studio</span>
-      </a>
-      <a href="{% url 'subscriptions' %}" class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all cursor-pointer">
-        <span class="material-symbols-outlined">payments</span>
-        <span class="font-label-md">Dons & Abonnements</span>
-      </a>
-      <a href="{% url 'about' %}" class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all cursor-pointer">
-        <span class="material-symbols-outlined">settings</span>
-        <span class="font-label-md">Paramètres</span>
-      </a>
-    </nav>
-    <button class="mt-auto bg-primary text-on-primary py-4 px-6 rounded-xl font-bold hover:opacity-90 active:scale-95 transition-all shadow-[0px_4px_20px_rgba(11,61,46,0.05)]">
-      <span class="material-symbols-outlined">add_circle</span> Publier un épisode
-    </button>
-    <div class="mt-6 flex flex-col gap-2 pt-6 border-t border-outline-variant/30">
-      <a href="{% url 'contact' %}" class="flex items-center gap-3 px-4 py-2 text-on-surface-variant font-label-sm">
-        <span class="material-symbols-outlined">help</span>
-        <span>Aide</span>
+    </div>
+
+    <div class="sp-sidebar-footer">
+      <a href="{% url 'contact' %}" class="sp-nav-item">
+        <span class="mso">help</span>
+        Aide
       </a>
     </div>
   </aside>
 
-  <!-- Main Content -->
-  <main class="flex-1 overflow-y-auto bg-background min-w-0">
-    <!-- Top Bar -->
-    <header class="bg-surface/80 backdrop-blur-md sticky top-0 z-50 shadow-[0px_4px_20px_rgba(11,61,46,0.05)] w-full">
-      <div class="flex justify-between items-center px-4 md:px-margin-desktop py-4 max-w-container-max-width mx-auto w-full">
-        <div class="flex items-center gap-4">
-          <h2 class="font-headline-md font-bold text-primary text-lg md:text-2xl">Tableau de Bord</h2>
-          <div class="hidden md:flex items-center bg-surface-container-low px-4 py-2 rounded-full border border-outline-variant/20">
-            <span class="material-symbols-outlined text-outline text-[20px]">search</span>
-            <input class="bg-transparent border-none focus:ring-0 text-body-md ml-2 w-48 md:w-64 outline-none" placeholder="Rechercher..." type="text"/>
-          </div>
+  <!-- ── MAIN ── -->
+  <main class="sp-main">
+
+    <!-- Topbar -->
+    <header class="sp-topbar">
+      <div class="sp-topbar-left">
+        <span class="sp-topbar-title">Tableau de Bord</span>
+        <div class="sp-search">
+          <span class="mso" style="font-size:16px;color:var(--sp-text-dim)">search</span>
+          <input type="text" placeholder="Rechercher...">
         </div>
-        <div class="flex items-center gap-4 md:gap-6">
-          <div class="flex items-center gap-2 px-3 py-1 bg-secondary-container text-on-secondary-container rounded-full">
-            <div class="w-2 h-2 rounded-full bg-secondary pulse-dot"></div>
-            <span class="text-label-sm font-bold">LIVE</span>
-          </div>
-          <div class="relative">
-            <span class="material-symbols-outlined text-primary cursor-pointer">notifications</span>
-            <div class="absolute -top-1 -right-1 w-2 h-2 bg-error rounded-full"></div>
-          </div>
-          <div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center border-2 border-primary/10 cursor-pointer">
-            <span class="font-bold text-primary text-sm">K</span>
-          </div>
+      </div>
+      <div class="sp-topbar-right">
+        <div class="sp-live-badge">
+          <div class="sp-live-dot"></div>
+          LIVE
         </div>
+        <div class="sp-icon-btn">
+          <span class="mso" style="font-size:18px">notifications</span>
+          <div class="sp-notif-dot"></div>
+        </div>
+        <div class="sp-avatar">K</div>
       </div>
     </header>
 
-    <div class="max-w-container-max-width mx-auto px-4 md:px-margin-desktop py-8">
+    <!-- Content -->
+    <div class="sp-content">
 
       <!-- Stats Grid -->
-      <section class="grid grid-cols-1 md:grid-cols-3 gap-gutter mb-section-gap">
-        <div class="bg-surface-container-lowest p-6 md:p-8 rounded-xl shadow-[0px_4px_20px_rgba(11,61,46,0.05)] border border-outline-variant/10">
-          <div class="flex items-center justify-between mb-4">
-            <span class="text-on-surface-variant font-label-md text-sm">Total Abonnés</span>
-            <span class="material-symbols-outlined text-secondary">group</span>
+      <section class="sp-stats-grid">
+
+        <div class="sp-stat-card">
+          <div class="sp-stat-header">
+            <span class="sp-stat-label">Total Abonnés</span>
+            <span class="sp-stat-icon mso">group</span>
           </div>
-          <div class="flex items-baseline gap-2">
-            <h3 class="text-3xl md:text-5xl font-bold text-primary" data-count="{{ total_episodes|default:1248 }}" data-suffix="k">0k</h3>
-            <span class="text-secondary font-bold text-label-md">+12%</span>
-          </div>
-          <div class="mt-4 w-full bg-surface-container-low h-1 rounded-full overflow-hidden">
-            <div class="bg-secondary h-full w-3/4"></div>
-          </div>
-        </div>
-        <div class="bg-surface-container-lowest p-6 md:p-8 rounded-xl shadow-[0px_4px_20px_rgba(11,61,46,0.05)] border border-outline-variant/10">
-          <div class="flex items-center justify-between mb-4">
-            <span class="text-on-surface-variant font-label-md text-sm">Écoutes ce mois</span>
-            <span class="material-symbols-outlined text-secondary">visibility</span>
-          </div>
-          <div class="flex items-baseline gap-2">
-            <h3 class="text-3xl md:text-5xl font-bold text-primary" data-count="{{ total_views|default:2400 }}" data-suffix="M">0M</h3>
-            <span class="text-secondary font-bold text-label-md">+5.2%</span>
-          </div>
-          <div class="mt-4 w-full bg-surface-container-low h-1 rounded-full overflow-hidden">
-            <div class="bg-secondary h-full w-1/2"></div>
+          <span class="sp-stat-number"
+                id="sp-count-1"
+                data-target="{{ total_subscribers|default:1248 }}"
+                data-suffix="k">0k</span>
+          <span class="sp-stat-growth">+12%</span>
+          <div class="sp-stat-bar-track">
+            <div class="sp-stat-bar-fill" data-w="75"></div>
           </div>
         </div>
-        <div class="bg-surface-container-lowest p-6 md:p-8 rounded-xl shadow-[0px_4px_20px_rgba(11,61,46,0.05)] border border-outline-variant/10">
-          <div class="flex items-center justify-between mb-4">
-            <span class="text-on-surface-variant font-label-md text-sm">Dons reçus</span>
-            <span class="material-symbols-outlined text-secondary">payments</span>
+
+        <div class="sp-stat-card">
+          <div class="sp-stat-header">
+            <span class="sp-stat-label">Écoutes ce mois</span>
+            <span class="sp-stat-icon mso">visibility</span>
           </div>
-          <div class="flex items-baseline gap-2">
-            <h3 class="text-3xl md:text-5xl font-bold text-primary" data-count="{{ total_donations|default:18420 }}" data-prefix="€">€0</h3>
-            <span class="text-secondary font-bold text-label-md">+8.1%</span>
-          </div>
-          <div class="mt-4 w-full bg-surface-container-low h-1 rounded-full overflow-hidden">
-            <div class="bg-secondary h-full w-2/3"></div>
+          <span class="sp-stat-number"
+                id="sp-count-2"
+                data-target="{{ total_views|default:2400 }}"
+                data-suffix="M">0M</span>
+          <span class="sp-stat-growth">+5.2%</span>
+          <div class="sp-stat-bar-track">
+            <div class="sp-stat-bar-fill" data-w="50"></div>
           </div>
         </div>
+
+        <div class="sp-stat-card">
+          <div class="sp-stat-header">
+            <span class="sp-stat-label">Dons reçus</span>
+            <span class="sp-stat-icon mso">payments</span>
+          </div>
+          <span class="sp-stat-number"
+                id="sp-count-3"
+                data-target="{{ total_donations|default:18420 }}"
+                data-prefix="€">€0</span>
+          <span class="sp-stat-growth">+8.1%</span>
+          <div class="sp-stat-bar-track">
+            <div class="sp-stat-bar-fill" data-w="65"></div>
+          </div>
+        </div>
+
       </section>
 
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
+      <!-- Two-column layout -->
+      <div class="sp-grid-2">
 
-        <!-- Left Column -->
-        <section class="lg:col-span-2 space-y-gutter">
+        <!-- Left column -->
+        <div class="sp-left">
 
-          <!-- Upload Zone -->
-          <div class="bg-surface-container-lowest rounded-xl p-6 md:p-8 shadow-[0px_4px_20px_rgba(11,61,46,0.05)] border border-outline-variant/10">
-            <h3 class="font-headline-md text-primary mb-6">Publier un Nouvel Épisode</h3>
-            <div class="border-2 border-dashed border-outline-variant rounded-xl p-8 md:p-12 flex flex-col items-center justify-center bg-surface-container-low hover:bg-surface-container-high transition-colors cursor-pointer group">
-              <div class="w-16 h-16 bg-primary-fixed rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <span class="material-symbols-outlined text-primary text-3xl">cloud_upload</span>
+          <!-- Upload zone -->
+          <div class="sp-card">
+            <div class="sp-card-title">Publier un Nouvel Épisode</div>
+            <a href="{% url 'publish_episode' %}" class="sp-upload-zone">
+              <div class="sp-upload-icon">
+                <span class="mso">cloud_upload</span>
               </div>
-              <p class="font-headline-md text-primary mb-2 text-center">Glissez-déposez votre fichier audio ou vidéo</p>
-              <p class="text-on-surface-variant font-body-md text-center">Taille max : 2Go. Formats : MP3, WAV, MP4, MOV</p>
-              <button class="mt-6 bg-primary text-on-primary px-8 py-3 rounded-full font-bold">Sélectionner un fichier</button>
-            </div>
+              <h4>Ajouter un podcast ou une vidéo</h4>
+              <p>Collez une URL audio ou une URL YouTube (studio).</p>
+              <span class="sp-btn-lime">Publier du contenu</span>
+            </a>
           </div>
 
-          <!-- Recent Uploads -->
-          <div class="bg-surface-container-lowest rounded-xl p-6 md:p-8 shadow-[0px_4px_20px_rgba(11,61,46,0.05)] border border-outline-variant/10">
-            <div class="flex items-center justify-between mb-8">
-              <h3 class="font-headline-md text-primary">Épisodes Récents</h3>
-              <a href="{% url 'podcasts' %}" class="text-secondary font-bold text-label-md hover:underline">Voir tout</a>
+          <!-- Recent episodes -->
+          <div class="sp-card">
+            <div class="sp-card-title">
+              Épisodes Récents
+              <a href="{% url 'podcasts' %}" class="sp-card-link">Voir tout</a>
             </div>
-            <div class="space-y-4">
+
+            <div class="sp-ep-list">
               {% for episode in episodes %}
-              <div class="flex items-center justify-between p-4 rounded-xl border border-outline-variant/20 hover:bg-surface-container-low transition-colors">
-                <div class="flex items-center gap-4 min-w-0">
-                  <div class="w-14 h-14 md:w-16 md:h-16 rounded-lg flex items-center justify-center text-white text-xl shrink-0" style="background:linear-gradient(135deg,{{ episode.cover_color }},#416900)">
-                    <span class="material-symbols-outlined text-3xl">church</span>
-                  </div>
-                  <div class="min-w-0">
-                    <h4 class="font-bold text-primary truncate">{{ episode.title }}</h4>
-                    <p class="text-label-sm text-on-surface-variant">Publié {{ episode.created_at|timesince }} • {{ episode.duration|default:"—" }} • {{ episode.views_count }} écoutes</p>
-                  </div>
+              <div class="sp-ep-item">
+                <div class="sp-ep-thumb episode-thumb"
+                     data-cover-color="{{ episode.cover_color|default:'#0b3d2e' }}">
+                  <span class="mso fill">church</span>
                 </div>
-                <div class="flex items-center gap-2 shrink-0">
-                  <button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
-                    <span class="material-symbols-outlined">edit</span>
-                  </button>
-                  <button class="p-2 text-on-surface-variant hover:text-error transition-colors">
-                    <span class="material-symbols-outlined">delete</span>
-                  </button>
+                <div class="sp-ep-info">
+                  <h4>{{ episode.title }}</h4>
+                  <p>
+                    Publié {{ episode.created_at|timesince }}
+                    {% if episode.duration %}&nbsp;• {{ episode.duration }}{% endif %}
+                    &nbsp;• {{ episode.views_count }} écoute{{ episode.views_count|pluralize }}
+                  </p>
+                </div>
+                <div class="sp-ep-actions">
+                  <a href="{% url 'publish_episode' %}" class="sp-action-btn" title="Modifier">
+                    <span class="mso">edit</span>
+                  </a>
+                  <a href="{% url 'podcast_detail' episode.pk %}" class="sp-action-btn" title="Voir sur le site">
+                    <span class="mso">open_in_new</span>
+                  </a>
                 </div>
               </div>
               {% empty %}
-              <div class="text-center py-12">
-                <div class="w-16 h-16 rounded-full bg-surface-container mx-auto mb-4 flex items-center justify-center">
-                  <span class="material-symbols-outlined text-5xl text-primary">church</span>
+              <div class="sp-empty">
+                <div class="sp-empty-icon">
+                  <span class="mso fill">church</span>
                 </div>
-                <h4 class="font-headline-md text-primary mb-2">Aucun épisode publié</h4>
-                <p class="text-on-surface-variant text-sm">Commencez par publier votre premier épisode !</p>
+                <h4>Aucun épisode publié</h4>
+                <p>Commencez par publier votre premier épisode !</p>
               </div>
               {% endfor %}
             </div>
           </div>
-        </section>
 
-        <!-- Right Column -->
-        <aside class="space-y-gutter">
+        </div><!-- /sp-left -->
 
-          <!-- Creator Tips -->
-          <div class="bg-primary-container text-on-primary rounded-xl p-6 md:p-8 shadow-xl">
-            <h3 class="font-headline-md mb-4 text-white">Conseils Créateur</h3>
-            <p class="text-white/70 text-sm mb-6">L'engagement de votre audience a augmenté de 15% cette semaine. Planifiez une session de prière en direct demain à 18h pour fidéliser vos abonnés.</p>
-            <button class="w-full bg-secondary-container text-on-secondary-container py-3 rounded-full font-bold hover:opacity-90 transition-opacity text-sm">Planifier un Live</button>
+        <!-- Right column -->
+        <div class="sp-right">
+
+          <!-- Conseils créateur -->
+          <div class="sp-tips-card">
+            <h3>Conseils Créateur</h3>
+            <p>
+              Publiez régulièrement : un lien audio (MP3 hébergé) pour les podcasts,
+              ou une URL YouTube pour les vidéos — tout se fait depuis « Publier un épisode ».
+            </p>
+            <a href="{% url 'manage_live_streams' %}" class="sp-btn-glass">Planifier un Live</a>
           </div>
 
-          <!-- Audience Retention -->
-          <div class="bg-surface-container-lowest rounded-xl p-6 md:p-8 shadow-[0px_4px_20px_rgba(11,61,46,0.05)] border border-outline-variant/10">
-            <h3 class="font-headline-md text-primary mb-6">Rétention Audience</h3>
-            <div class="h-48 flex items-end justify-between gap-2 px-2">
-              <div class="w-full bg-primary-fixed-dim rounded-t-lg" style="height:60%"></div>
-              <div class="w-full bg-primary-fixed-dim rounded-t-lg" style="height:45%"></div>
-              <div class="w-full bg-secondary-fixed rounded-t-lg" style="height:85%"></div>
-              <div class="w-full bg-primary-fixed-dim rounded-t-lg" style="height:30%"></div>
-              <div class="w-full bg-primary-fixed-dim rounded-t-lg" style="height:55%"></div>
-              <div class="w-full bg-primary-fixed-dim rounded-t-lg" style="height:70%"></div>
-            </div>
-            <div class="flex justify-between mt-4 text-label-sm text-on-surface-variant">
-              <span>Lun</span><span>Mar</span><span>Mer</span><span>Jeu</span><span>Ven</span><span>Sam</span>
-            </div>
-          </div>
-
-          <!-- Top Geographies -->
-          <div class="bg-surface-container-lowest rounded-xl p-6 md:p-8 shadow-[0px_4px_20px_rgba(11,61,46,0.05)] border border-outline-variant/10">
-            <h3 class="font-headline-md text-primary mb-6">Origine des Auditeurs</h3>
-            <div class="space-y-4">
-              <div>
-                <div class="flex items-center justify-between mb-1">
-                  <span class="text-body-md text-sm">🇫🇷 France</span>
-                  <span class="font-bold text-primary text-sm">42%</span>
-                </div>
-                <div class="w-full bg-surface-container-low h-2 rounded-full">
-                  <div class="bg-primary h-full rounded-full" style="width:42%"></div>
-                </div>
-              </div>
-              <div>
-                <div class="flex items-center justify-between mb-1">
-                  <span class="text-body-md text-sm">🇨🇲 Cameroun</span>
-                  <span class="font-bold text-primary text-sm">18%</span>
-                </div>
-                <div class="w-full bg-surface-container-low h-2 rounded-full">
-                  <div class="bg-primary h-full rounded-full" style="width:18%"></div>
-                </div>
-              </div>
-              <div>
-                <div class="flex items-center justify-between mb-1">
-                  <span class="text-body-md text-sm">🇨🇮 Côte d'Ivoire</span>
-                  <span class="font-bold text-primary text-sm">12%</span>
-                </div>
-                <div class="w-full bg-surface-container-low h-2 rounded-full">
-                  <div class="bg-primary h-full rounded-full" style="width:12%"></div>
-                </div>
-              </div>
-              <div>
-                <div class="flex items-center justify-between mb-1">
-                  <span class="text-body-md text-sm">🇧🇪 Belgique</span>
-                  <span class="font-bold text-primary text-sm">8%</span>
-                </div>
-                <div class="w-full bg-surface-container-low h-2 rounded-full">
-                  <div class="bg-primary h-full rounded-full" style="width:8%"></div>
-                </div>
-              </div>
+          <!-- Rétention Audience -->
+          <div class="sp-card">
+            <div class="sp-card-title">Rétention Audience</div>
+            <div class="sp-chart-bars" id="sp-bars">
+              <div class="sp-bar-col"><div class="sp-bar" style="height:0" data-h="66"></div><span class="sp-bar-label">Lun</span></div>
+              <div class="sp-bar-col"><div class="sp-bar" style="height:0" data-h="50"></div><span class="sp-bar-label">Mar</span></div>
+              <div class="sp-bar-col"><div class="sp-bar sp-bar-hi" style="height:0" data-h="94"></div><span class="sp-bar-label">Mer</span></div>
+              <div class="sp-bar-col"><div class="sp-bar" style="height:0" data-h="33"></div><span class="sp-bar-label">Jeu</span></div>
+              <div class="sp-bar-col"><div class="sp-bar" style="height:0" data-h="61"></div><span class="sp-bar-label">Ven</span></div>
+              <div class="sp-bar-col"><div class="sp-bar" style="height:0" data-h="77"></div><span class="sp-bar-label">Sam</span></div>
             </div>
           </div>
 
-        </aside>
-      </div>
-    </div>
+          <!-- Origine des auditeurs -->
+          <div class="sp-card">
+            <div class="sp-card-title">Origine des Auditeurs</div>
+
+            <div class="sp-geo-item">
+              <div class="sp-geo-header">
+                <span class="sp-geo-name">🇫🇷 France</span>
+                <span class="sp-geo-pct">42%</span>
+              </div>
+              <div class="sp-geo-track"><div class="sp-geo-fill" data-w="42"></div></div>
+            </div>
+
+            <div class="sp-geo-item">
+              <div class="sp-geo-header">
+                <span class="sp-geo-name">🇨🇲 Cameroun</span>
+                <span class="sp-geo-pct">18%</span>
+              </div>
+              <div class="sp-geo-track"><div class="sp-geo-fill" data-w="18"></div></div>
+            </div>
+
+            <div class="sp-geo-item">
+              <div class="sp-geo-header">
+                <span class="sp-geo-name">🇨🇮 Côte d'Ivoire</span>
+                <span class="sp-geo-pct">12%</span>
+              </div>
+              <div class="sp-geo-track"><div class="sp-geo-fill" data-w="12"></div></div>
+            </div>
+
+            <div class="sp-geo-item">
+              <div class="sp-geo-header">
+                <span class="sp-geo-name">🇧🇪 Belgique</span>
+                <span class="sp-geo-pct">8%</span>
+              </div>
+              <div class="sp-geo-track"><div class="sp-geo-fill" data-w="8"></div></div>
+            </div>
+
+          </div><!-- /geo card -->
+
+        </div><!-- /sp-right -->
+
+      </div><!-- /sp-grid-2 -->
+    </div><!-- /sp-content -->
   </main>
-</div>
+</div><!-- /#sp-dashboard -->
+
+<!-- ════════════════════════════════
+     JS — animations au chargement
+════════════════════════════════ -->
+<script>
+(function () {
+  /* Compteurs animés */
+  function animateCount(el, target, prefix, suffix, duration) {
+    var start = 0;
+    var step  = target / (duration / 16);
+    var timer = setInterval(function () {
+      start = Math.min(start + step, target);
+      el.textContent = (prefix || '') + Math.round(start).toLocaleString('fr-FR') + (suffix || '');
+      if (start >= target) clearInterval(timer);
+    }, 16);
+  }
+
+  /* Barres de stats */
+  function animateBars() {
+    // Set CSS variables for episode thumbs
+    document.querySelectorAll('.episode-thumb').forEach(el => {
+      const color = el.dataset.coverColor;
+      if (color) {
+        el.style.setProperty('--cover-color', color);
+      }
+    });
+
+    // Stats animation
+    document.querySelectorAll('.sp-stat-card').forEach((card, i) => {
+      setTimeout(() => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+          card.style.transition = 'all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)';
+          card.style.opacity = '1';
+          card.style.transform = 'translateY(0)';
+        }, 100);
+      }, i * 100);
+    });
+    document.querySelectorAll('.sp-stat-bar-fill[data-w]').forEach(function (el) {
+      setTimeout(function () { el.style.width = el.getAttribute('data-w') + '%'; }, 350);
+    });
+  }
+
+  /* Graphique rétention */
+  function animateChart() {
+    document.querySelectorAll('#sp-bars .sp-bar[data-h]').forEach(function (el, i) {
+      setTimeout(function () {
+        el.style.height = el.getAttribute('data-h') + 'px';
+      }, 300 + i * 60);
+    });
+  }
+
+  /* Geo fills */
+  function animateGeo() {
+    document.querySelectorAll('.sp-geo-fill[data-w]').forEach(function (el, i) {
+      setTimeout(function () {
+        el.style.width = el.getAttribute('data-w') + '%';
+      }, 400 + i * 80);
+    });
+  }
+
+  /* Lancement une fois le DOM prêt */
+  window.addEventListener('DOMContentLoaded', function () {
+    var c1 = document.getElementById('sp-count-1');
+    var c2 = document.getElementById('sp-count-2');
+    var c3 = document.getElementById('sp-count-3');
+
+    if (c1) animateCount(c1, parseInt(c1.dataset.target) || 1248, '',  'k',  1200);
+    if (c2) animateCount(c2, parseInt(c2.dataset.target) || 2400, '',  'M',  1200);
+    if (c3) animateCount(c3, parseInt(c3.dataset.target) || 18420, '€', '', 1200);
+
+    animateBars();
+    animateChart();
+    animateGeo();
+  });
+})();
+</script>
+
 {% endblock %}
