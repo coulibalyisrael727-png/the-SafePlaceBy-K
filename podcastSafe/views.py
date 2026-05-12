@@ -362,7 +362,15 @@ def stripe_webhook(request):
                     donation.status = 'failed'
                     donation.save()
                 except Donation.DoesNotExist:
-                    pass
+                    # Log the error but don't fail the webhook processing
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.warning(f"Donation with id {donation_id} not found for payment_failed event")
+                except Exception as e:
+                    # Log unexpected errors
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.error(f"Error processing payment_failed event for donation {donation_id}: {str(e)}")
         
         return JsonResponse({'status': 'success'}, status=200)
     
