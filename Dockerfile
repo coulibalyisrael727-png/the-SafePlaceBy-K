@@ -27,19 +27,27 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
+# Créer un utilisateur non-root pour la sécurité
+RUN groupadd -r django && useradd -r -g django django
+
 # Copier les dépendances Python du builder
-COPY --from=builder /root/.local /root/.local
+COPY --from=builder /root/.local /home/django/.local
 
 # Copier l'application
 COPY . .
 
-# Ajouter /root/.local/bin au PATH
-ENV PATH=/root/.local/bin:$PATH
+# Créer des répertoires nécessaires et donner les permissions
+RUN mkdir -p /app/staticfiles /app/media \
+    && chown -R django:django /app \
+    && chown -R django:django /home/django
+
+# Ajouter /home/django/.local/bin au PATH
+ENV PATH=/home/django/.local/bin:$PATH
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 
-# Créer des répertoires nécessaires
-RUN mkdir -p /app/staticfiles /app/media
+# Changer vers l'utilisateur non-root
+USER django
 
 # Exposer le port
 EXPOSE 8000
