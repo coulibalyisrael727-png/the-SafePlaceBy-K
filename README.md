@@ -40,58 +40,204 @@ Architecture containerisée complète pour la plateforme de podcast SafePlace av
 - Docker Compose ≥ 2.0
 - Git
 
-## [TOOLS] Installation Rapide
+## [INSTALL] Installation
 
-### 1. Cloner ou télécharger le projet
+### Méthode 1: Docker Compose (Recommandé)
 
+1. **Cloner le projet**
 ```bash
-git clone <repository>
-cd safeplace
+git clone https://github.com/kingBen-j/the-SafePlace.git
+cd the-SafePlace
 ```
 
-### 2. Configurer les variables d'environnement
-
+2. **Configurer l'environnement**
 ```bash
 cp .env.example .env
+# Éditer .env avec vos configurations
 ```
 
-Éditer `.env` et configurer:
-- Clés Stripe (créer un compte sur https://stripe.com)
-- Identifiants email
-- Clé secrète Django
-- Mots de passe database et Redis
-
-### 3. Démarrer l'application
-
-**Automatique (recommandé):**
+3. **Démarrer les services**
 ```bash
-chmod +x init.sh
-./init.sh
-```
-
-**Manuel:**
-```bash
-# Construire les images
-docker-compose build
-
-# Démarrer les services
 docker-compose up -d
+```
 
-# Exécuter les migrations
+4. **Initialiser la base de données**
+```bash
 docker-compose exec web python manage.py migrate
-
-# Créer le superutilisateur
 docker-compose exec web python manage.py createsuperuser
-
-# Collecter les fichiers statiques
 docker-compose exec web python manage.py collectstatic --noinput
 ```
 
-### 4. Accéder à l'application
+### Méthode 2: Développement Local
 
-- **Site**: http://localhost
-- **Admin Django**: http://localhost/admin
-- **API**: http://localhost/api/
+1. **Installer les dépendances Python**
+```bash
+pip install -r requirements.txt
+```
+
+2. **Configurer PostgreSQL et Redis**
+```bash
+# Installer PostgreSQL et Redis localement
+# Configurer les variables d'environnement
+```
+
+3. **Démarrer l'application**
+```bash
+python manage.py migrate
+python manage.py runserver
+```
+
+## [USAGE] Usage
+
+### Pour les Utilisateurs
+
+1. **Accéder au site**
+   - URL: `http://localhost`
+   - Navigation intuitive entre podcasts et vidéos
+
+2. **S'abonner aux notifications**
+   - Formulaire d'abonnement gratuit
+   - Notifications par email pour nouveaux contenus
+
+3. **Faire un don**
+   - Paiement sécurisé via Stripe
+   - Plusieurs montants disponibles
+
+### Pour les Administrateurs
+
+1. **Accéder au dashboard**
+   - URL: `http://localhost/admin`
+   - Authentification requise
+
+2. **Publier des épisodes**
+   - Ajouter podcasts et vidéos
+   - Gérer les catégories
+   - Programmer les lives
+
+3. **Gérer les donations**
+   - Voir l'historique des donations
+   - Exporter les données
+
+### Commandes de Base
+
+```bash
+# Voir les logs
+docker-compose logs -f
+
+# Redémarrer les services
+docker-compose restart
+
+# Accéder au shell Django
+docker-compose exec web python manage.py shell
+
+# Créer un superutilisateur
+docker-compose exec web python manage.py createsuperuser
+```
+
+## [API] Documentation API
+
+### Base URL
+```
+http://localhost/api/
+```
+
+### Endpoints Disponibles
+
+#### Épisodes
+```http
+GET    /api/episodes/              # Liste tous les épisodes
+GET    /api/episodes/{id}/         # Détails d'un épisode
+POST   /api/episodes/              # Créer un épisode (admin)
+PUT    /api/episodes/{id}/         # Modifier un épisode (admin)
+DELETE /api/episodes/{id}/         # Supprimer un épisode (admin)
+```
+
+#### Live Streams
+```http
+GET    /api/livestreams/           # Liste tous les lives
+GET    /api/livestreams/{id}/      # Détails d'un live
+POST   /api/livestreams/           # Créer un live (admin)
+PUT    /api/livestreams/{id}/      # Modifier un live (admin)
+DELETE /api/livestreams/{id}/      # Supprimer un live (admin)
+```
+
+#### Donations
+```http
+POST   /api/donation/create/        # Créer une donation
+POST   /api/donation/confirm/       # Confirmer une donation
+GET    /api/donation/list/          # Liste des donations (admin)
+```
+
+#### Abonnements
+```http
+POST   /api/subscription/create/     # Créer un abonnement
+GET    /api/subscription/list/       # Liste des abonnés (admin)
+```
+
+#### Webhooks Stripe
+```http
+POST   /api/stripe/webhook/         # Webhook Stripe
+```
+
+### Exemples d'Utilisation
+
+#### Créer une Donation
+```bash
+curl -X POST http://localhost/api/donation/create/ \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Jean Dupont",
+    "email": "jean@example.com",
+    "amount": 25.00,
+    "message": "Merci pour votre travail"
+  }'
+```
+
+#### Lister les Épisodes
+```bash
+curl -X GET http://localhost/api/episodes/ \
+  -H "Content-Type: application/json"
+```
+
+#### Créer un Abonnement
+```bash
+curl -X POST http://localhost/api/subscription/create/ \
+  -H "Content-Type: application/json" \
+  -d '{
+    "first_name": "Jean",
+    "last_name": "Dupont",
+    "email": "jean@example.com",
+    "notify_podcasts": true,
+    "notify_live": true,
+    "notify_videos": false
+  }'
+```
+
+### Format des Réponses
+
+**Succès (200 OK)**
+```json
+{
+  "success": true,
+  "data": {...}
+}
+```
+
+**Erreur (400/500)**
+```json
+{
+  "success": false,
+  "error": "Message d'erreur"
+}
+```
+
+### Authentification API
+
+Pour les endpoints protégés, inclure le token:
+```bash
+curl -X GET http://localhost/api/episodes/ \
+  -H "Authorization: Token votre-token-api"
+```
 
 ## [PAGE] Configuration Importante
 
@@ -362,6 +508,7 @@ Pour l'aide et le support:
 ---
 
 **Prêt à lancer?** Exécutez `./init.sh` et commencez à diffuser! [ROCKET]
-#   P r o j e t - S a f e P l a c e B y - K  
+#   P r o j e t - S a f e P l a c e B y - K 
+ 
  # SafePlaceBy-k
 # SafePlaceBy-k
