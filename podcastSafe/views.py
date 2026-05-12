@@ -324,7 +324,6 @@ def stripe_webhook(request):
         sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
         
         # Vérifier la signature du webhook
-        event = None
         try:
             import stripe
             event = stripe.Webhook.construct_event(

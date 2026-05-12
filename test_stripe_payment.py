@@ -39,8 +39,11 @@ def test_stripe_connection():
             import stripe
             stripe.PaymentIntent.cancel(result.id)
             print("✅ Payment Intent de test annulé")
-        except:
-            pass
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning(f"Failed to cancel test Payment Intent: {str(e)}")
+            print(f"⚠️ Impossible d'annuler le Payment Intent de test: {str(e)}")
         
         return True
         
