@@ -12,6 +12,22 @@ from .auth import owner_required
 from .stripe_handler import StripePaymentHandler
 
 
+def send_donation_confirmation_email(donation):
+    """Helper function to send donation confirmation email"""
+    try:
+        send_mail(
+            'Merci pour votre don!',
+            f'Bonjour {donation.name},\n\nMerci beaucoup pour votre don de {donation.amount}€ à The SafePlace by K.\n\nVotre aide nous permet de continuer notre mission.\n\nDieu vous bénisse!\n\n✝ The SafePlace by K',
+            settings.DEFAULT_FROM_EMAIL,
+            [donation.email],
+            fail_silently=True
+        )
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.warning(f"Failed to send donation confirmation email to {donation.email}: {str(e)}")
+
+
 def home(request):
     latest_episodes = Episode.objects.filter(is_published=True)[:6]
     live_streams = LiveStream.objects.filter(status='live')[:4]
@@ -290,16 +306,7 @@ def confirm_donation(request):
             donation.save()
             
             # Envoyer un email de confirmation
-            try:
-                send_mail(
-                    'Merci pour votre don!',
-                    f'Bonjour {donation.name},\n\nMerci beaucoup pour votre don de {donation.amount}€ à The SafePlace by K.\n\nVotre aide nous permet de continuer notre mission.\n\nDieu vous bénisse!\n\n✝ The SafePlace by K',
-                    settings.DEFAULT_FROM_EMAIL,
-                    [donation.email],
-                    fail_silently=True
-                )
-            except:
-                pass
+            send_donation_confirmation_email(donation)
             
             return JsonResponse({'success': True, 'message': 'Merci pour votre donation!'})
         
@@ -341,16 +348,7 @@ def stripe_webhook(request):
                         donation.save()
                         
                         # Envoyer email de confirmation
-                        try:
-                            send_mail(
-                                'Merci pour votre don!',
-                                f'Bonjour {donation.name},\n\nMerci beaucoup pour votre don de {donation.amount}€ à The SafePlace by K.\n\nVotre aide nous permet de continuer notre mission.\n\nDieu vous bénisse!\n\n✝ The SafePlace by K',
-                                settings.DEFAULT_FROM_EMAIL,
-                                [donation.email],
-                                fail_silently=True
-                            )
-                        except:
-                            pass
+                        send_donation_confirmation_email(donation)
                 except Donation.DoesNotExist:
                     pass
         
