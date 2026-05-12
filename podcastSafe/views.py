@@ -31,8 +31,10 @@ def podcasts(request):
     categories = Category.objects.all()
     selected_cat = request.GET.get('categorie')
     if selected_cat:
-        episodes = episodes.filter(category__id=selected_cat)
-    context = {'episodes': episodes, 'categories': categories, 'selected_cat': selected_cat}
+        filtered_episodes = episodes.filter(category__id=selected_cat)
+    else:
+        filtered_episodes = episodes
+    context = {'episodes': filtered_episodes, 'categories': categories, 'selected_cat': selected_cat}
     return render(request, 'podcasts.html', context)
 
 
