@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Dons & Abonnements — The SafePlace by K{% endblock %}
+{% block content %}
+<main class="max-w-container-max-width mx-auto px-4 md:px-margin-desktop py-10">
+
+  <div class="mb-10 sp-fade-in">
+    <h1 class="font-display-lg text-primary text-3xl md:text-5xl mb-3">Dons & Abonnements</h1>
+    <p class="text-on-surface-variant text-body-lg">Soutenez le ministère The SafePlace by K.</p>
+  </div>
+
+  <!-- Banner -->
+  <div class="sp-cta sp-fade-in mb-12" style="text-align:left">
+    <div class="absolute inset-0 opacity-10">
+      <span class="sp-cross-float sp-cross-float--1 absolute text-white text-9xl top-0 right-8">
+        <span class="material-symbols-outlined">church</span>
+      </span>
+      <div class="sp-orb sp-orb--lime sp-orb--animated absolute -right-10 -bottom-10 w-40 h-40 rounded-full opacity-20"></div>
+    </div>
+    <div class="relative z-10 max-w-2xl">
+      <span class="sp-live-badge sp-live-badge--green mb-4 inline-flex">
+        <span class="sp-live-badge__dot"></span>
+        SOUTENIR LA MISSION
+      </span>
+      <h2 class="font-headline-lg text-white text-2xl md:text-3xl mb-3">Votre générosité change des vies</h2>
+      <p class="text-white/80 mb-6">Chaque don nous aide à diffuser gratuitement la Parole de Dieu sur toutes les plateformes.</p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 xl:grid-cols-3 gap-gutter">
+    <div class="xl:col-span-2 space-y-section-gap">
+
+      <!-- Formulaire don -->
+      <section class="bg-surface-container-lowest p-8 rounded-xl border border-outline-variant shadow-[0px_4px_20px_rgba(11,61,46,0.05)] sp-fade-in">
+        <h3 class="font-headline-md text-primary mb-6 text-xl">Faire un Don</h3>
+        <form method="POST" action="{% url 'subscriptions' %}">
+          {% csrf_token %}
+          <div class="grid grid-cols-3 gap-3 mb-6">
+            {% for amount in "5,10,25,50,100" %}
+            <button type="button" onclick="setAmount({{ amount }})" class="amount-btn py-3 border border-outline-variant rounded-xl font-bold text-primary hover:bg-secondary-container hover:border-secondary transition-all text-center">{{ amount }}€</button>
+            {% endfor %}
+            <input type="number" name="amount" id="custom-amount" placeholder="Montant libre" min="1"
+                   class="col-span-3 md:col-span-1 px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-secondary/30 outline-none font-label-md"/>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <input type="text" name="name" placeholder="Votre nom (facultatif)"
+                   class="px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-secondary/30 outline-none bg-surface-container-low font-body-md"/>
+            <input type="email" name="email" placeholder="Email (facultatif)"
+                   class="px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-secondary/30 outline-none bg-surface-container-low font-body-md"/>
+          </div>
+          <textarea name="message" placeholder="Un message d'encouragement (facultatif)" rows="3"
+                    class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-secondary/30 outline-none bg-surface-container-low font-body-md mb-6"></textarea>
+          <button type="submit" class="sp-btn sp-btn--primary w-full py-4 text-lg">
+            <span class="material-symbols-outlined mr-2">volunteer_activism</span>Faire un don maintenant
+          </button>
+          <p class="text-center text-on-surface-variant text-xs mt-4 flex items-center justify-center gap-1">
+            <span class="material-symbols-outlined text-[14px]">lock</span> Paiement sécurisé via Stripe
+          </p>
+        </form>
+      </section>
+
+      <!-- Historique -->
+      {% if donations %}
+      <section class="sp-fade-in">
+        <h3 class="font-headline-md text-primary mb-6 text-xl">Historique des Dons</h3>
+        <div class="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden">
+          <table class="w-full text-left">
+            <thead class="bg-surface-container-low text-label-sm text-on-surface-variant uppercase tracking-wider">
+              <tr>
+                <th class="px-6 py-4">Donateur</th>
+                <th class="px-6 py-4">Date</th>
+                <th class="px-6 py-4">Montant</th>
+                <th class="px-6 py-4">Statut</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-surface-container">
+              {% for don in donations %}
+              <tr class="hover:bg-surface-container-low transition-colors">
+                <td class="px-6 py-4 font-label-md text-primary">{{ don.name|default:"Anonyme" }}</td>
+                <td class="px-6 py-4 text-body-md">{{ don.created_at|date:"d M Y" }}</td>
+                <td class="px-6 py-4 font-bold text-primary">{{ don.amount }}€</td>
+                <td class="px-6 py-4">
+                  <span class="flex items-center gap-1.5 text-secondary text-label-sm font-bold">
+                    <span class="w-2 h-2 rounded-full bg-secondary"></span>Complété
+                  </span>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+      {% endif %}
+    </div>
+
+    <!-- Sidebar droite -->
+    <div class="space-y-gutter">
+      <!-- Plans -->
+      <div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant sp-fade-in">
+        <h3 class="font-headline-md text-primary mb-6 text-lg">Plans de Soutien</h3>
+        <div class="space-y-4">
+          <div class="sp-plan">
+            <div class="flex justify-between items-center mb-2">
+              <span class="sp-plan__name">Ami du Ministère</span>
+              <span class="sp-plan__price">5€/mois</span>
+            </div>
+            <p class="sp-plan__desc">Accès aux contenus en avance</p>
+          </div>
+          <div class="sp-plan sp-plan--recommended">
+            <div class="flex justify-between items-center mb-2">
+              <span class="sp-plan__name">Partenaire</span>
+              <span class="sp-plan__price">15€/mois</span>
+            </div>
+            <p class="sp-plan__desc">+ Mentions spéciales et prière</p>
+            <span class="text-secondary font-bold text-xs">⭐ RECOMMANDÉ</span>
+          </div>
+          <div class="sp-plan sp-plan--premium">
+            <div class="flex justify-between items-center mb-2">
+              <span class="sp-plan__name">Pilier de la Foi</span>
+              <span class="sp-plan__price">50€/mois</span>
+            </div>
+            <p class="sp-plan__desc">+ Accès direct & rencontres</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paiement Annuel -->
+      <div class="bg-primary p-8 rounded-xl text-white overflow-hidden relative sp-fade-in">
+        <div class="sp-orb sp-orb--lime absolute -right-8 -bottom-8 w-32 h-32 rounded-full opacity-20"></div>
+        <div class="relative z-10">
+          <h4 class="font-headline-md mb-3 text-lg">Paiement Annuel</h4>
+          <p class="text-white/80 text-sm mb-5">Économisez 20% avec un abonnement annuel.</p>
+          <button class="sp-btn sp-btn--secondary w-full">Voir les offres annuelles</button>
+        </div>
+      </div>
+
+      <!-- Payment Methods -->
+      <div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant sp-fade-in">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="font-headline-md text-primary">Moyens de Paiement</h3>
+        </div>
+        <div class="space-y-4">
+          <div class="sp-payment-card">
+            <div class="sp-payment-card__icon">
+              <span class="material-symbols-outlined text-primary">credit_card</span>
+            </div>
+            <div class="flex-1">
+              <p class="sp-payment-card__name">Visa se terminant par 4242</p>
+              <p class="sp-payment-card__expiry">Expire 12/25</p>
+            </div>
+            <div class="w-3 h-3 rounded-full bg-secondary"></div>
+          </div>
+        </div>
+        <div class="mt-6 pt-6 border-t border-surface-container">
+          <button class="w-full flex items-center justify-center gap-2 text-on-surface-variant font-label-md hover:text-primary transition-colors">
+            <span class="material-symbols-outlined">lock</span>
+            Géré sécuritairement par Stripe
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+function setAmount(val) {
+  document.getElementById('custom-amount').value = val;
+}
+</script>
+{% endblock %}

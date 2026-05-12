@@ -1,0 +1,80 @@
+image: docker:latest
+
+services:
+  - docker:dind
+
+variables:
+  REGISTRY: registry.gitlab.com
+  IMAGE_NAME: $REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME
+
+stages:
+  - build
+  - test
+  - deploy
+
+# Build Docker image
+build:
+  stage: build
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t $IMAGE_NAME:$CI_COMMIT_SHA .
+    - docker tag $IMAGE_NAME:$CI_COMMIT_SHA $IMAGE_NAME:latest
+    - docker push $IMAGE_NAME:$CI_COMMIT_SHA
+    - docker push $IMAGE_NAME:latest
+  only:
+    - main
+    - develop
+
+# Run tests
+test:
+  image: $IMAGE_NAME:$CI_COMMIT_SHA
+  stage: test
+  services:
+    - postgres:16
+    - redis:7
+  variables:
+    POSTGRES_DB: safeplace_test
+    POSTGRES_USER: test
+    POSTGRES_PASSWORD: test
+  script:
+    - pip install -q pytest pytest-django pytest-cov
+    - pytest --cov=podcastSafe --cov-report=term-missing
+  only:
+    - merge_requests
+    - main
+
+# Deploy to production
+deploy:production:
+  stage: deploy
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache openssh-client
+    - mkdir -p ~/.ssh
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+    - chmod 700 ~/.ssh/id_rsa
+    - ssh-keyscan -H $SERVER_HOST >> ~/.ssh/known_hosts
+  script:
+    - ssh $SERVER_USER@$SERVER_HOST "cd /app && git pull origin main"
+    - ssh $SERVER_USER@$SERVER_HOST "cd /app && docker-compose build && docker-compose up -d"
+    - ssh $SERVER_USER@$SERVER_HOST "cd /app && docker-compose exec -T web python manage.py migrate"
+  only:
+    - main
+  when: manual
+
+# Deploy to staging
+deploy:staging:
+  stage: deploy
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache openssh-client
+    - mkdir -p ~/.ssh
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+    - chmod 700 ~/.ssh/id_rsa
+    - ssh-keyscan -H $STAGING_HOST >> ~/.ssh/known_hosts
+  script:
+    - ssh $SERVER_USER@$STAGING_HOST "cd /app && git pull origin develop"
+    - ssh $SERVER_USER@$STAGING_HOST "cd /app && docker-compose -f docker-compose.dev.yml build && docker-compose -f docker-compose.dev.yml up -d"
+    - ssh $SERVER_USER@$STAGING_HOST "cd /app && docker-compose -f docker-compose.dev.yml exec -T web python manage.py migrate"
+  only:
+    - develop
+  when: manual

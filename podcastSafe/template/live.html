@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Live — The SafePlace by K{% endblock %}
+{% block content %}
+<main class="max-w-container-max-width mx-auto px-4 md:px-margin-desktop py-10">
+
+  <div class="mb-10 sp-fade-in">
+    <h1 class="font-display-lg text-primary text-3xl md:text-5xl mb-3">Émissions Live</h1>
+    <p class="text-on-surface-variant text-body-lg">Rejoignez nos lives sur toutes les plateformes.</p>
+    <!-- Waveform animée -->
+    <div class="sp-waveform sp-waveform--sm mt-4">
+      <div class="sp-waveform__bar"></div>
+      <div class="sp-waveform__bar"></div>
+      <div class="sp-waveform__bar"></div>
+      <div class="sp-waveform__bar"></div>
+      <div class="sp-waveform__bar"></div>
+      <div class="sp-waveform__bar"></div>
+      <div class="sp-waveform__bar"></div>
+      <div class="sp-waveform__bar"></div>
+    </div>
+  </div>
+
+  <!-- Plateformes -->
+  <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-12">
+    {% for platform, label, icon, color in platforms %}
+    <div class="flex flex-col items-center gap-2 p-4 bg-surface-container-low rounded-[20px] border border-slate-100 hover:shadow-md transition-all cursor-pointer group">
+      <div class="w-12 h-12 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform text-2xl" style="background:{{ color }}">{{ icon }}</div>
+      <span class="font-label-md text-on-surface text-sm">{{ label }}</span>
+    </div>
+    {% empty %}
+    {% for platform_info in platform_list %}
+    <div class="flex flex-col items-center gap-2 p-4 bg-surface-container-low rounded-[20px] border border-slate-100 hover:shadow-md transition-all cursor-pointer group">
+      <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform bg-primary">
+        <span class="material-symbols-outlined text-white text-[22px]">{{ platform_info.icon }}</span>
+      </div>
+      <span class="font-label-md text-on-surface text-sm">{{ platform_info.name }}</span>
+    </div>
+    {% endfor %}
+    <!-- Fallback statique -->
+    <div class="flex flex-col items-center gap-2 p-4 bg-surface-container-low rounded-[20px] border border-slate-100 hover:shadow-md transition-all cursor-pointer group">
+      <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform" style="background:#FF0000">
+        <span class="material-symbols-outlined text-white">live_tv</span>
+      </div>
+      <span class="font-label-md text-on-surface text-sm">YouTube</span>
+    </div>
+    <div class="flex flex-col items-center gap-2 p-4 bg-surface-container-low rounded-[20px] border border-slate-100 hover:shadow-md transition-all cursor-pointer group">
+      <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform" style="background:#1877F2">📘</div>
+      <span class="font-label-md text-on-surface text-sm">Facebook</span>
+    </div>
+    <div class="flex flex-col items-center gap-2 p-4 bg-surface-container-low rounded-[20px] border border-slate-100 hover:shadow-md transition-all cursor-pointer group">
+      <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform" style="background:#000000">
+        <span class="material-symbols-outlined text-white">music_note</span>
+      </div>
+      <span class="font-label-md text-on-surface text-sm">TikTok</span>
+    </div>
+    <div class="flex flex-col items-center gap-2 p-4 bg-surface-container-low rounded-[20px] border border-slate-100 hover:shadow-md transition-all cursor-pointer group">
+      <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform" style="background:#E4405F">
+        <span class="material-symbols-outlined text-white">photo_camera</span>
+      </div>
+      <span class="font-label-md text-on-surface text-sm">Instagram</span>
+    </div>
+    <div class="flex flex-col items-center gap-2 p-4 bg-surface-container-low rounded-[20px] border border-slate-100 hover:shadow-md transition-all cursor-pointer group">
+      <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform" style="background:#1DB954">
+        <span class="material-symbols-outlined text-white">music_note</span>
+      </div>
+      <span class="font-label-md text-on-surface text-sm">Spotify</span>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Lives actuels -->
+  {% if streams %}
+  <section class="mb-12 sp-fade-in">
+    <div class="flex items-center gap-3 mb-6">
+      <div class="sp-live-ring">
+        <span class="w-3 h-3 rounded-full bg-red-500"></span>
+      </div>
+      <h2 class="font-headline-lg text-primary text-2xl">En Direct Maintenant</h2>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+      {% for stream in streams %}
+      <div class="relative bg-primary rounded-[24px] overflow-hidden shadow-xl group hover:shadow-2xl transition-all sp-3d-card">
+        <div class="absolute inset-0 opacity-10"><span class="absolute text-white text-9xl font-bold top-2 right-4 material-symbols-outlined">church</span></div>
+        <!-- Orbe animé -->
+        <div class="sp-orb sp-orb--lime sp-orb--animated absolute -top-10 -right-10 w-40 h-40 rounded-full opacity-10"></div>
+        <div class="relative z-10 p-8">
+          <div class="flex items-center justify-between mb-4">
+            <div class="sp-live-badge sp-live-badge--red">
+              <span class="sp-live-badge__dot"></span>
+              LIVE
+            </div>
+            <span class="text-white/60 text-sm">{{ stream.get_platform_display }}</span>
+          </div>
+          <h3 class="font-headline-md text-white text-xl mb-2">{{ stream.title }}</h3>
+          <p class="text-white/70 text-sm mb-6">{{ stream.description|truncatewords:15 }}</p>
+          <!-- Waveform -->
+          <div class="sp-waveform sp-waveform--sm mb-4">
+            <div class="sp-waveform__bar" style="background:rgba(159,247,0,0.6)"></div>
+            <div class="sp-waveform__bar" style="background:rgba(159,247,0,0.6)"></div>
+            <div class="sp-waveform__bar" style="background:rgba(159,247,0,0.6)"></div>
+            <div class="sp-waveform__bar" style="background:rgba(159,247,0,0.6)"></div>
+            <div class="sp-waveform__bar" style="background:rgba(159,247,0,0.6)"></div>
+            <div class="sp-waveform__bar" style="background:rgba(159,247,0,0.6)"></div>
+            <div class="sp-waveform__bar" style="background:rgba(159,247,0,0.6)"></div>
+            <div class="sp-waveform__bar" style="background:rgba(159,247,0,0.6)"></div>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-white/60 text-sm flex items-center gap-1">
+              <span class="material-symbols-outlined text-[16px]">visibility</span>{{ stream.viewers_count }} spectateurs
+            </span>
+            {% if stream.stream_url %}
+            <a href="{{ stream.stream_url }}" target="_blank" class="sp-btn sp-btn--secondary">Rejoindre →</a>
+            {% endif %}
+          </div>
+        </div>
+        <div class="sp-3d-card__shine"></div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- Programmation -->
+  {% if scheduled %}
+  <section class="sp-fade-in">
+    <h2 class="font-headline-lg text-primary text-2xl mb-6">Prochains Lives</h2>
+    <div class="space-y-4">
+      {% for stream in scheduled %}
+      <div class="flex items-center gap-5 p-5 bg-surface-container-low rounded-[20px] border border-slate-100 hover:shadow-md transition-all sp-hover-lift">
+        <div class="w-16 h-16 rounded-xl flex items-center justify-center text-white text-2xl shrink-0" style="background:linear-gradient(135deg,#00261b,#416900)">
+          <span class="material-symbols-outlined text-4xl">church</span>
+        </div>
+        <div class="flex-1">
+          <h3 class="font-headline-md text-primary text-lg">{{ stream.title }}</h3>
+          <p class="text-on-surface-variant text-sm">{{ stream.get_platform_display }}{% if stream.scheduled_at %} · {{ stream.scheduled_at|date:"d M Y à H:i" }}{% endif %}</p>
+        </div>
+        <button class="sp-btn sp-btn--outline">Me rappeler</button>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  {% if not streams and not scheduled %}
+  <div class="sp-empty">
+    <div class="sp-empty__icon" style="background:var(--sp-primary)">
+      <span class="material-symbols-outlined text-6xl text-white">church</span>
+    </div>
+    <h3 class="sp-empty__title">Pas de live pour le moment</h3>
+    <p class="sp-empty__desc">Suivez-nous sur nos réseaux sociaux pour être notifié de nos prochains lives.</p>
+    <a href="{% url 'subscriptions' %}" class="sp-btn sp-btn--secondary">Rester informé</a>
+  </div>
+  {% endif %}
+
+</main>
+{% endblock %}

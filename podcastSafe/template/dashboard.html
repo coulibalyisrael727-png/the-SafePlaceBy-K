@@ -1,0 +1,251 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Creator Studio — The SafePlace by K{% endblock %}
+{% block content %}
+<div class="flex min-h-screen">
+
+  <!-- Sidebar Studio -->
+  <aside class="bg-surface-container-low w-64 hidden lg:flex flex-col h-screen p-6 gap-4 sticky top-0 shrink-0">
+    <div class="mb-8">
+      <h1 class="font-headline-md font-bold text-primary">Creator Studio</h1>
+      <p class="font-label-md text-on-surface-variant text-sm">Gérer votre contenu</p>
+    </div>
+    <nav class="flex-1 flex flex-col gap-2">
+      <a href="{% url 'dashboard' %}" class="flex items-center gap-3 px-4 py-3 bg-secondary-container text-on-secondary-container rounded-lg font-bold transition-all cursor-pointer">
+        <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">leaderboard</span>
+        <span class="font-label-md">Analytique</span>
+      </a>
+      <a href="{% url 'podcasts' %}" class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all cursor-pointer">
+        <span class="material-symbols-outlined">video_library</span>
+        <span class="font-label-md">Bibliothèque</span>
+      </a>
+      <a href="{% url 'live' %}" class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all cursor-pointer">
+        <span class="material-symbols-outlined">sensors</span>
+        <span class="font-label-md">Live Studio</span>
+      </a>
+      <a href="{% url 'subscriptions' %}" class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all cursor-pointer">
+        <span class="material-symbols-outlined">payments</span>
+        <span class="font-label-md">Dons & Abonnements</span>
+      </a>
+      <a href="{% url 'about' %}" class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all cursor-pointer">
+        <span class="material-symbols-outlined">settings</span>
+        <span class="font-label-md">Paramètres</span>
+      </a>
+    </nav>
+    <button class="mt-auto bg-primary text-on-primary py-4 px-6 rounded-xl font-bold hover:opacity-90 active:scale-95 transition-all shadow-[0px_4px_20px_rgba(11,61,46,0.05)]">
+      <span class="material-symbols-outlined">add_circle</span> Publier un épisode
+    </button>
+    <div class="mt-6 flex flex-col gap-2 pt-6 border-t border-outline-variant/30">
+      <a href="{% url 'contact' %}" class="flex items-center gap-3 px-4 py-2 text-on-surface-variant font-label-sm">
+        <span class="material-symbols-outlined">help</span>
+        <span>Aide</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 overflow-y-auto bg-background min-w-0">
+    <!-- Top Bar -->
+    <header class="bg-surface/80 backdrop-blur-md sticky top-0 z-50 shadow-[0px_4px_20px_rgba(11,61,46,0.05)] w-full">
+      <div class="flex justify-between items-center px-4 md:px-margin-desktop py-4 max-w-container-max-width mx-auto w-full">
+        <div class="flex items-center gap-4">
+          <h2 class="font-headline-md font-bold text-primary text-lg md:text-2xl">Tableau de Bord</h2>
+          <div class="hidden md:flex items-center bg-surface-container-low px-4 py-2 rounded-full border border-outline-variant/20">
+            <span class="material-symbols-outlined text-outline text-[20px]">search</span>
+            <input class="bg-transparent border-none focus:ring-0 text-body-md ml-2 w-48 md:w-64 outline-none" placeholder="Rechercher..." type="text"/>
+          </div>
+        </div>
+        <div class="flex items-center gap-4 md:gap-6">
+          <div class="flex items-center gap-2 px-3 py-1 bg-secondary-container text-on-secondary-container rounded-full">
+            <div class="w-2 h-2 rounded-full bg-secondary pulse-dot"></div>
+            <span class="text-label-sm font-bold">LIVE</span>
+          </div>
+          <div class="relative">
+            <span class="material-symbols-outlined text-primary cursor-pointer">notifications</span>
+            <div class="absolute -top-1 -right-1 w-2 h-2 bg-error rounded-full"></div>
+          </div>
+          <div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center border-2 border-primary/10 cursor-pointer">
+            <span class="font-bold text-primary text-sm">K</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="max-w-container-max-width mx-auto px-4 md:px-margin-desktop py-8">
+
+      <!-- Stats Grid -->
+      <section class="grid grid-cols-1 md:grid-cols-3 gap-gutter mb-section-gap">
+        <div class="bg-surface-container-lowest p-6 md:p-8 rounded-xl shadow-[0px_4px_20px_rgba(11,61,46,0.05)] border border-outline-variant/10">
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-on-surface-variant font-label-md text-sm">Total Abonnés</span>
+            <span class="material-symbols-outlined text-secondary">group</span>
+          </div>
+          <div class="flex items-baseline gap-2">
+            <h3 class="text-3xl md:text-5xl font-bold text-primary" data-count="{{ total_episodes|default:1248 }}" data-suffix="k">0k</h3>
+            <span class="text-secondary font-bold text-label-md">+12%</span>
+          </div>
+          <div class="mt-4 w-full bg-surface-container-low h-1 rounded-full overflow-hidden">
+            <div class="bg-secondary h-full w-3/4"></div>
+          </div>
+        </div>
+        <div class="bg-surface-container-lowest p-6 md:p-8 rounded-xl shadow-[0px_4px_20px_rgba(11,61,46,0.05)] border border-outline-variant/10">
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-on-surface-variant font-label-md text-sm">Écoutes ce mois</span>
+            <span class="material-symbols-outlined text-secondary">visibility</span>
+          </div>
+          <div class="flex items-baseline gap-2">
+            <h3 class="text-3xl md:text-5xl font-bold text-primary" data-count="{{ total_views|default:2400 }}" data-suffix="M">0M</h3>
+            <span class="text-secondary font-bold text-label-md">+5.2%</span>
+          </div>
+          <div class="mt-4 w-full bg-surface-container-low h-1 rounded-full overflow-hidden">
+            <div class="bg-secondary h-full w-1/2"></div>
+          </div>
+        </div>
+        <div class="bg-surface-container-lowest p-6 md:p-8 rounded-xl shadow-[0px_4px_20px_rgba(11,61,46,0.05)] border border-outline-variant/10">
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-on-surface-variant font-label-md text-sm">Dons reçus</span>
+            <span class="material-symbols-outlined text-secondary">payments</span>
+          </div>
+          <div class="flex items-baseline gap-2">
+            <h3 class="text-3xl md:text-5xl font-bold text-primary" data-count="{{ total_donations|default:18420 }}" data-prefix="€">€0</h3>
+            <span class="text-secondary font-bold text-label-md">+8.1%</span>
+          </div>
+          <div class="mt-4 w-full bg-surface-container-low h-1 rounded-full overflow-hidden">
+            <div class="bg-secondary h-full w-2/3"></div>
+          </div>
+        </div>
+      </section>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
+
+        <!-- Left Column -->
+        <section class="lg:col-span-2 space-y-gutter">
+
+          <!-- Upload Zone -->
+          <div class="bg-surface-container-lowest rounded-xl p-6 md:p-8 shadow-[0px_4px_20px_rgba(11,61,46,0.05)] border border-outline-variant/10">
+            <h3 class="font-headline-md text-primary mb-6">Publier un Nouvel Épisode</h3>
+            <div class="border-2 border-dashed border-outline-variant rounded-xl p-8 md:p-12 flex flex-col items-center justify-center bg-surface-container-low hover:bg-surface-container-high transition-colors cursor-pointer group">
+              <div class="w-16 h-16 bg-primary-fixed rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <span class="material-symbols-outlined text-primary text-3xl">cloud_upload</span>
+              </div>
+              <p class="font-headline-md text-primary mb-2 text-center">Glissez-déposez votre fichier audio ou vidéo</p>
+              <p class="text-on-surface-variant font-body-md text-center">Taille max : 2Go. Formats : MP3, WAV, MP4, MOV</p>
+              <button class="mt-6 bg-primary text-on-primary px-8 py-3 rounded-full font-bold">Sélectionner un fichier</button>
+            </div>
+          </div>
+
+          <!-- Recent Uploads -->
+          <div class="bg-surface-container-lowest rounded-xl p-6 md:p-8 shadow-[0px_4px_20px_rgba(11,61,46,0.05)] border border-outline-variant/10">
+            <div class="flex items-center justify-between mb-8">
+              <h3 class="font-headline-md text-primary">Épisodes Récents</h3>
+              <a href="{% url 'podcasts' %}" class="text-secondary font-bold text-label-md hover:underline">Voir tout</a>
+            </div>
+            <div class="space-y-4">
+              {% for episode in episodes %}
+              <div class="flex items-center justify-between p-4 rounded-xl border border-outline-variant/20 hover:bg-surface-container-low transition-colors">
+                <div class="flex items-center gap-4 min-w-0">
+                  <div class="w-14 h-14 md:w-16 md:h-16 rounded-lg flex items-center justify-center text-white text-xl shrink-0" style="background:linear-gradient(135deg,{{ episode.cover_color }},#416900)">
+                    <span class="material-symbols-outlined text-3xl">church</span>
+                  </div>
+                  <div class="min-w-0">
+                    <h4 class="font-bold text-primary truncate">{{ episode.title }}</h4>
+                    <p class="text-label-sm text-on-surface-variant">Publié {{ episode.created_at|timesince }} • {{ episode.duration|default:"—" }} • {{ episode.views_count }} écoutes</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                  <button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
+                    <span class="material-symbols-outlined">edit</span>
+                  </button>
+                  <button class="p-2 text-on-surface-variant hover:text-error transition-colors">
+                    <span class="material-symbols-outlined">delete</span>
+                  </button>
+                </div>
+              </div>
+              {% empty %}
+              <div class="text-center py-12">
+                <div class="w-16 h-16 rounded-full bg-surface-container mx-auto mb-4 flex items-center justify-center">
+                  <span class="material-symbols-outlined text-5xl text-primary">church</span>
+                </div>
+                <h4 class="font-headline-md text-primary mb-2">Aucun épisode publié</h4>
+                <p class="text-on-surface-variant text-sm">Commencez par publier votre premier épisode !</p>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </section>
+
+        <!-- Right Column -->
+        <aside class="space-y-gutter">
+
+          <!-- Creator Tips -->
+          <div class="bg-primary-container text-on-primary rounded-xl p-6 md:p-8 shadow-xl">
+            <h3 class="font-headline-md mb-4 text-white">Conseils Créateur</h3>
+            <p class="text-white/70 text-sm mb-6">L'engagement de votre audience a augmenté de 15% cette semaine. Planifiez une session de prière en direct demain à 18h pour fidéliser vos abonnés.</p>
+            <button class="w-full bg-secondary-container text-on-secondary-container py-3 rounded-full font-bold hover:opacity-90 transition-opacity text-sm">Planifier un Live</button>
+          </div>
+
+          <!-- Audience Retention -->
+          <div class="bg-surface-container-lowest rounded-xl p-6 md:p-8 shadow-[0px_4px_20px_rgba(11,61,46,0.05)] border border-outline-variant/10">
+            <h3 class="font-headline-md text-primary mb-6">Rétention Audience</h3>
+            <div class="h-48 flex items-end justify-between gap-2 px-2">
+              <div class="w-full bg-primary-fixed-dim rounded-t-lg" style="height:60%"></div>
+              <div class="w-full bg-primary-fixed-dim rounded-t-lg" style="height:45%"></div>
+              <div class="w-full bg-secondary-fixed rounded-t-lg" style="height:85%"></div>
+              <div class="w-full bg-primary-fixed-dim rounded-t-lg" style="height:30%"></div>
+              <div class="w-full bg-primary-fixed-dim rounded-t-lg" style="height:55%"></div>
+              <div class="w-full bg-primary-fixed-dim rounded-t-lg" style="height:70%"></div>
+            </div>
+            <div class="flex justify-between mt-4 text-label-sm text-on-surface-variant">
+              <span>Lun</span><span>Mar</span><span>Mer</span><span>Jeu</span><span>Ven</span><span>Sam</span>
+            </div>
+          </div>
+
+          <!-- Top Geographies -->
+          <div class="bg-surface-container-lowest rounded-xl p-6 md:p-8 shadow-[0px_4px_20px_rgba(11,61,46,0.05)] border border-outline-variant/10">
+            <h3 class="font-headline-md text-primary mb-6">Origine des Auditeurs</h3>
+            <div class="space-y-4">
+              <div>
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-body-md text-sm">🇫🇷 France</span>
+                  <span class="font-bold text-primary text-sm">42%</span>
+                </div>
+                <div class="w-full bg-surface-container-low h-2 rounded-full">
+                  <div class="bg-primary h-full rounded-full" style="width:42%"></div>
+                </div>
+              </div>
+              <div>
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-body-md text-sm">🇨🇲 Cameroun</span>
+                  <span class="font-bold text-primary text-sm">18%</span>
+                </div>
+                <div class="w-full bg-surface-container-low h-2 rounded-full">
+                  <div class="bg-primary h-full rounded-full" style="width:18%"></div>
+                </div>
+              </div>
+              <div>
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-body-md text-sm">🇨🇮 Côte d'Ivoire</span>
+                  <span class="font-bold text-primary text-sm">12%</span>
+                </div>
+                <div class="w-full bg-surface-container-low h-2 rounded-full">
+                  <div class="bg-primary h-full rounded-full" style="width:12%"></div>
+                </div>
+              </div>
+              <div>
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-body-md text-sm">🇧🇪 Belgique</span>
+                  <span class="font-bold text-primary text-sm">8%</span>
+                </div>
+                <div class="w-full bg-surface-container-low h-2 rounded-full">
+                  <div class="bg-primary h-full rounded-full" style="width:8%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </aside>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}

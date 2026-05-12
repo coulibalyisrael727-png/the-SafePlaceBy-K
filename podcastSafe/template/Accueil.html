@@ -1,0 +1,590 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}The SafePlace by K — Accueil{% endblock %}
+
+{% block content %}
+<main class="max-w-container-max-width mx-auto px-4 md:px-margin-desktop py-8 flex gap-gutter">
+
+  <!-- Contenu Principal -->
+  <div class="flex-1 min-w-0">
+
+    <!-- Hero Section: Featured Live / Épisode vedette -->
+    <section class="sp-hero h-[420px] md:h-[480px] mb-section-gap" aria-label="Section héro">
+      <div class="sp-hero__bg"></div>
+
+      <!-- Croix décoratives flottantes -->
+      <div class="absolute inset-0 overflow-hidden opacity-10" aria-hidden="true">
+        <div class="sp-cross-float sp-cross-float--1 absolute text-white text-9xl font-bold top-4 right-8 sp-parallax" data-depth="0.4">
+          <span class="material-symbols-outlined">church</span>
+        </div>
+        <div class="sp-cross-float sp-cross-float--2 absolute text-white text-5xl font-bold bottom-12 right-1/3 sp-parallax" data-depth="0.2">
+          <span class="material-symbols-outlined">church</span>
+        </div>
+        <div class="sp-cross-float sp-cross-float--3 absolute text-white text-3xl font-bold top-1/3 left-8 sp-parallax" data-depth="0.3">
+          <span class="material-symbols-outlined">church</span>
+        </div>
+        <div class="sp-cross-float sp-cross-float--4 absolute text-white text-4xl font-bold bottom-1/4 left-1/4 sp-parallax" data-depth="0.15">
+          <span class="material-symbols-outlined">church</span>
+        </div>
+      </div>
+
+      <!-- Orbes animés -->
+      <div class="sp-orb sp-orb--lime sp-orb--animated absolute top-0 right-0 w-80 h-80 rounded-full opacity-20" aria-hidden="true"></div>
+      <div class="sp-orb sp-orb--green absolute bottom-0 left-0 w-64 h-64 rounded-full opacity-10" aria-hidden="true"></div>
+
+      <div class="sp-hero__overlay"></div>
+      <div class="sp-hero__content">
+        {% if live_streams %}
+          <div class="sp-hero__badge">
+            <span class="sp-live-badge__dot"></span>
+            EN DIRECT
+          </div>
+          <h1 class="sp-hero__title">{{ live_streams.0.title }}</h1>
+          <p class="sp-hero__desc">{{ live_streams.0.description|truncatewords:20 }}</p>
+          <div class="sp-hero__actions">
+            <a href="{% url 'live' %}" class="sp-btn sp-btn--secondary sp-btn--lg">Rejoindre le Live</a>
+            <button type="button"
+                    class="sp-btn sp-btn--glass sp-btn--lg js-reminder-btn"
+                    aria-label="Me rappeler pour ce live"
+                    data-title="{{ live_streams.0.title }}">
+              Me le rappeler
+            </button>
+          </div>
+
+        {% elif featured %}
+          <div class="sp-hero__badge" style="background:var(--sp-primary-container);color:var(--sp-on-primary-container)">
+            <span class="material-symbols-outlined text-[16px]" aria-hidden="true">headphones</span>
+            DERNIER ÉPISODE
+          </div>
+          <h1 class="sp-hero__title">{{ featured.title }}</h1>
+          <p class="sp-hero__desc">{{ featured.description|truncatewords:20 }}</p>
+          <div class="sp-hero__actions">
+            <button type="button"
+                    class="sp-btn sp-btn--secondary sp-btn--lg js-play-btn"
+                    data-audio-url="{{ featured.audio_url }}"
+                    data-title="{{ featured.title }}"
+                    data-host="{{ featured.host }}"
+                    data-color="{{ featured.cover_color }}"
+                    aria-label="Écouter {{ featured.title }}">
+              ▶ Écouter maintenant
+            </button>
+            <a href="{% url 'podcast_detail' featured.pk %}" class="sp-btn sp-btn--glass sp-btn--lg">Voir les détails</a>
+          </div>
+
+        {% else %}
+          <div class="sp-hero__badge">
+            <span class="material-symbols-outlined text-[16px]" aria-hidden="true">church</span>
+            BIENVENUE
+          </div>
+          <h1 class="sp-hero__title">Votre Refuge de Foi et d'Inspirations Chrétiennes</h1>
+          <p class="sp-hero__desc">Podcasts, émissions live et méditations bibliques pour nourrir votre foi au quotidien.</p>
+          <div class="sp-hero__actions">
+            <a href="{% url 'podcasts' %}" class="sp-btn sp-btn--secondary sp-btn--lg">Découvrir les podcasts</a>
+            <a href="{% url 'live' %}" class="sp-btn sp-btn--glass sp-btn--lg">Voir les lives</a>
+          </div>
+        {% endif %}
+      </div>
+
+      {% if live_streams %}
+      <div class="sp-hero__viewers" aria-label="Spectateurs en direct">
+        <span class="material-symbols-outlined text-primary text-[20px]" style="font-variation-settings:'FILL' 1" aria-hidden="true">visibility</span>
+        <span class="font-bold text-primary">{{ live_streams.0.viewers_count|default:"1.2K" }}</span>
+      </div>
+      {% endif %}
+
+      <!-- Scroll indicator -->
+      <button type="button"
+              class="sp-scroll-indicator hidden md:flex"
+              aria-label="Défiler vers le bas"
+              onclick="document.querySelector('.sp-section').scrollIntoView({behavior:'smooth'})">
+        <span class="material-symbols-outlined text-white/40" aria-hidden="true">expand_more</span>
+      </button>
+    </section>
+
+    <!-- Section Émissions (Bento Grid) -->
+    <section class="sp-section sp-fade-in" aria-labelledby="emissions-title">
+      <div class="sp-section__header">
+        <div>
+          <h2 id="emissions-title" class="sp-section__title">Nos Émissions</h2>
+          <p class="sp-section__subtitle">Thématiques chrétiennes pour édifier votre foi.</p>
+        </div>
+        <a href="{% url 'live' %}" class="sp-section__link" aria-label="Voir toutes les émissions">
+          Voir tout <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+        </a>
+      </div>
+
+      <div class="sp-bento sp-bento--4">
+
+        <!-- Prédication -->
+        <a href="{% url 'podcasts' %}?categorie=predication"
+           class="sp-bento__item sp-bento__item--large sp-3d-card group"
+           aria-label="Catégorie Prédication">
+          <div class="sp-bento__bg" style="background:linear-gradient(135deg,#00261b,#0b3d2e)">
+            <span class="material-symbols-outlined text-white text-6xl mb-2 group-hover:scale-110 transition-transform block" aria-hidden="true">church</span>
+            <h3 class="text-white font-headline-md text-xl">Prédication</h3>
+            <p class="text-white/70 text-sm mt-1">Études bibliques</p>
+          </div>
+          <div class="sp-3d-card__shine" aria-hidden="true"></div>
+        </a>
+
+        <!-- Témoignages -->
+        <a href="{% url 'podcasts' %}?categorie=temoignages"
+           class="sp-bento__item sp-3d-card group"
+           aria-label="Catégorie Témoignages">
+          <div class="sp-bento__bg" style="background:linear-gradient(135deg,#416900,#9ff700)">
+            <span class="material-symbols-outlined text-white text-4xl mb-2 block" style="font-variation-settings:'FILL' 1" aria-hidden="true">record_voice_over</span>
+            <h3 class="text-white font-headline-md">Témoignages</h3>
+            <p class="text-white/70 text-xs mt-1">Histoires de vie</p>
+          </div>
+          <div class="sp-3d-card__shine" aria-hidden="true"></div>
+        </a>
+
+        <!-- Louange -->
+        <a href="{% url 'podcasts' %}?categorie=louange"
+           class="sp-bento__item sp-3d-card group"
+           aria-label="Catégorie Louange">
+          <div class="sp-bento__bg" style="background:linear-gradient(135deg,#214f3f,#396756)">
+            <span class="material-symbols-outlined text-white text-4xl mb-2 block" style="font-variation-settings:'FILL' 1" aria-hidden="true">music_note</span>
+            <h3 class="text-white font-headline-md">Louange</h3>
+            <p class="text-white/70 text-xs mt-1">Adoration &amp; Prière</p>
+          </div>
+          <div class="sp-3d-card__shine" aria-hidden="true"></div>
+        </a>
+
+        <!-- Famille -->
+        <a href="{% url 'podcasts' %}?categorie=famille"
+           class="sp-bento__item sp-bento__item--wide sp-3d-card group"
+           aria-label="Catégorie Famille">
+          <div class="sp-bento__bg" style="background:linear-gradient(135deg,#0b3d2e,#9ff700)">
+            <span class="material-symbols-outlined text-white text-4xl mb-2 block" style="font-variation-settings:'FILL' 1" aria-hidden="true">family_restroom</span>
+            <h3 class="text-white font-headline-md text-lg">Famille</h3>
+            <p class="text-white/70 text-sm mt-1">Foi &amp; Quotidien</p>
+          </div>
+          <div class="sp-3d-card__shine" aria-hidden="true"></div>
+        </a>
+
+      </div>
+    </section>
+
+    <!-- Section Derniers Podcasts -->
+    <section class="sp-section sp-fade-in" aria-labelledby="podcasts-title">
+      <div class="sp-section__header">
+        <div>
+          <h2 id="podcasts-title" class="sp-section__title">Derniers Podcasts</h2>
+          <p class="sp-section__subtitle">Épisodes récents de The SafePlace by K.</p>
+        </div>
+        <div class="flex gap-2">
+          <button type="button"
+                  id="carousel-prev"
+                  class="sp-btn sp-btn--icon-sm border border-outline-variant text-primary hover:bg-surface-container-high"
+                  aria-label="Épisode précédent">
+            <span class="material-symbols-outlined text-[18px]" aria-hidden="true">chevron_left</span>
+          </button>
+          <button type="button"
+                  id="carousel-next"
+                  class="sp-btn sp-btn--icon-sm border border-outline-variant text-primary hover:bg-surface-container-high"
+                  aria-label="Épisode suivant">
+            <span class="material-symbols-outlined text-[18px]" aria-hidden="true">chevron_right</span>
+          </button>
+        </div>
+      </div>
+
+      {% if latest_episodes %}
+      <div id="podcast-carousel" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-gutter" role="list">
+        {% for episode in latest_episodes %}
+        <article class="sp-card sp-3d-card sp-hover-lift" role="listitem">
+          <div class="sp-card__cover">
+            <div class="sp-card__cover-bg" style="background:linear-gradient(135deg,{{ episode.cover_color }},#416900)" aria-hidden="true">
+              <span class="material-symbols-outlined text-white text-4xl">church</span>
+            </div>
+            <button type="button"
+                    class="sp-card__play-btn sp-play-fab js-play-btn"
+                    data-audio-url="{{ episode.audio_url }}"
+                    data-title="{{ episode.title }}"
+                    data-host="{{ episode.host }}"
+                    data-color="{{ episode.cover_color }}"
+                    aria-label="Écouter {{ episode.title }}">
+              <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1" aria-hidden="true">play_arrow</span>
+            </button>
+          </div>
+          <div class="sp-card__meta">
+            <span class="sp-card__category">{{ episode.category.name|default:"Général" }}</span>
+            <span class="sp-card__duration">{{ episode.duration|default:"—" }}</span>
+          </div>
+          <h3 class="sp-card__title">{{ episode.title }}</h3>
+          <p class="sp-card__desc">{{ episode.description }}</p>
+          <div class="sp-card__host">
+            <div class="sp-card__host-avatar" aria-hidden="true">K</div>
+            <span class="sp-card__host-name">{{ episode.host|default:"The SafePlace by K" }}</span>
+            <a href="{% url 'podcast_detail' episode.pk %}"
+               class="ml-auto text-secondary hover:underline text-sm font-bold"
+               aria-label="Voir les détails de {{ episode.title }}">
+              Détails →
+            </a>
+          </div>
+          <div class="sp-3d-card__shine" aria-hidden="true"></div>
+        </article>
+        {% endfor %}
+      </div>
+      {% else %}
+      <!-- État vide -->
+      <div class="sp-empty" role="status">
+        <div class="sp-empty__icon" aria-hidden="true">
+          <span class="material-symbols-outlined text-6xl text-primary">church</span>
+        </div>
+        <h3 class="sp-empty__title">Les épisodes arrivent bientôt</h3>
+        <p class="sp-empty__desc">Abonnez-vous gratuitement pour être notifié à chaque nouvelle publication.</p>
+        <a href="{% url 'subscriptions' %}" class="sp-btn sp-btn--secondary">S'abonner gratuitement</a>
+      </div>
+      {% endif %}
+    </section>
+
+    <!-- CTA Abonnement gratuit (Stripe retiré) -->
+    <section class="sp-cta sp-fade-in" aria-labelledby="cta-title">
+      <div class="absolute inset-0 opacity-10" aria-hidden="true">
+        <div class="sp-cross-float sp-cross-float--1 absolute text-white text-8xl font-bold top-2 left-8">
+          <span class="material-symbols-outlined">church</span>
+        </div>
+        <div class="sp-cross-float sp-cross-float--2 absolute text-white text-5xl font-bold bottom-4 right-12">
+          <span class="material-symbols-outlined">church</span>
+        </div>
+      </div>
+      <div class="sp-cta__content">
+        <div class="sp-cta__badge">
+          <span class="material-symbols-outlined text-[16px]" style="font-variation-settings:'FILL' 1" aria-hidden="true">volunteer_activism</span>
+          REJOINDRE LA COMMUNAUTÉ
+        </div>
+        <h2 id="cta-title" class="sp-cta__title">Faites partie de notre mission</h2>
+        <p class="sp-cta__desc">Abonnez-vous gratuitement et recevez nos épisodes, méditations et émissions en direct directement dans votre boîte mail.</p>
+        <div class="sp-cta__actions">
+          <a href="{% url 'subscriptions' %}" class="sp-btn sp-btn--secondary sp-btn--lg">S'abonner gratuitement</a>
+          <a href="{% url 'about' %}" class="sp-btn sp-btn--glass sp-btn--lg">En savoir plus</a>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /Contenu Principal -->
+
+  <!-- Sidebar Recommandations -->
+  <aside class="w-80 hidden xl:block shrink-0" aria-label="Sidebar recommandations">
+    <div class="sticky top-28 space-y-8">
+
+      <!-- Lives en cours -->
+      {% if live_streams %}
+      <div class="bg-primary p-6 rounded-[24px] text-white" aria-label="Émissions en direct">
+        <div class="flex items-center gap-2 mb-4">
+          <span class="w-2.5 h-2.5 rounded-full bg-secondary-fixed pulse-dot" aria-hidden="true"></span>
+          <h3 class="font-headline-md text-lg">En Direct Maintenant</h3>
+        </div>
+        {% for stream in live_streams %}
+        <a href="{% url 'live' %}"
+           class="flex items-center gap-3 p-3 bg-white/10 rounded-xl mb-3 hover:bg-white/20 transition-colors"
+           aria-label="Rejoindre {{ stream.title }}">
+          <div class="w-10 h-10 rounded-lg flex items-center justify-center text-white" style="background:rgba(159,247,0,0.2)">
+            <span class="material-symbols-outlined text-secondary-fixed text-[18px]" aria-hidden="true">sensors</span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="font-bold text-sm truncate">{{ stream.title }}</p>
+            <p class="text-white/60 text-xs">{{ stream.get_platform_display }} · {{ stream.viewers_count }} spectateurs</p>
+          </div>
+        </a>
+        {% endfor %}
+        <a href="{% url 'live' %}" class="block w-full text-center mt-3 bg-secondary-container text-on-secondary-container font-bold py-2.5 rounded-full hover:opacity-90 transition-all text-sm">
+          Rejoindre →
+        </a>
+      </div>
+      {% endif %}
+
+      <!-- Émissions recommandées -->
+      <div>
+        <h2 class="font-headline-md text-primary mb-5">Recommandés</h2>
+        <div class="space-y-4" role="list">
+          {% for episode in latest_episodes|slice:":4" %}
+          <div class="flex items-center gap-3 group p-2 rounded-xl hover:bg-surface-container transition-colors" role="listitem">
+            <a href="{% url 'podcast_detail' episode.pk %}"
+               class="w-12 h-12 rounded-xl shrink-0 flex items-center justify-center text-white text-lg"
+               style="background:linear-gradient(135deg,{{ episode.cover_color }},#416900)"
+               aria-label="Voir {{ episode.title }}">
+              <span class="material-symbols-outlined" aria-hidden="true">church</span>
+            </a>
+            <div class="flex-1 min-w-0">
+              <h4 class="font-bold text-on-surface truncate text-sm">{{ episode.title }}</h4>
+              <p class="text-label-sm text-on-surface-variant">{{ episode.host|default:"The SafePlace by K" }}</p>
+            </div>
+            <button type="button"
+                    class="text-on-surface-variant hover:text-secondary p-1 rounded-full transition-colors js-play-btn"
+                    data-audio-url="{{ episode.audio_url }}"
+                    data-title="{{ episode.title }}"
+                    data-host="{{ episode.host }}"
+                    aria-label="Écouter {{ episode.title }}">
+              <span class="material-symbols-outlined text-[20px]" style="font-variation-settings:'FILL' 1" aria-hidden="true">play_circle</span>
+            </button>
+          </div>
+          {% empty %}
+          <p class="text-on-surface-variant text-sm text-center py-4">Aucun épisode pour l'instant</p>
+          {% endfor %}
+        </div>
+        <a href="{% url 'podcasts' %}" class="w-full mt-6 py-3 border border-outline text-primary font-bold rounded-xl hover:bg-surface-container-high transition-all block text-center text-sm">
+          Voir tous les épisodes
+        </a>
+      </div>
+
+      <!-- Carte Abonnement gratuit (remplace le don Stripe) -->
+      <div class="bg-primary p-8 rounded-[24px] text-on-primary shadow-lg">
+        <h3 class="font-headline-md text-lg mb-3">Rejoindre la Communauté</h3>
+        <p class="text-on-primary/80 text-sm mb-5">Abonnez-vous gratuitement pour ne manquer aucun épisode ni émission.</p>
+        <a href="{% url 'subscriptions' %}"
+           class="w-full bg-secondary-container text-on-secondary-container font-bold py-3 rounded-full hover:shadow-lg transition-all block text-center text-sm">
+          <span class="material-symbols-outlined text-sm mr-2">notifications</span>S'abonner gratuitement
+        </a>
+      </div>
+
+    </div>
+  </aside>
+
+</main>
+
+<!-- Modale Rappel Live -->
+<div id="reminder-modal"
+     class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 backdrop-blur-sm"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="reminder-modal-title">
+  <div class="bg-surface rounded-[24px] p-8 max-w-sm w-full mx-4 shadow-2xl">
+    <h2 id="reminder-modal-title" class="font-headline-md text-on-surface text-xl mb-2">Me rappeler ce live</h2>
+    <p id="reminder-modal-live-title" class="text-on-surface-variant text-sm mb-6"></p>
+    <div class="space-y-4">
+      <div>
+        <label for="reminder-email" class="block text-sm font-bold text-on-surface mb-1">Votre adresse e-mail</label>
+        <input type="email"
+               id="reminder-email"
+               class="w-full px-4 py-3 rounded-xl border border-outline bg-surface-container text-on-surface text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+               placeholder="email@exemple.com"
+               autocomplete="email">
+      </div>
+      <p id="reminder-feedback" class="text-sm hidden" role="status" aria-live="polite"></p>
+      <div class="flex gap-3">
+        <button type="button"
+                id="reminder-confirm"
+                class="flex-1 sp-btn sp-btn--secondary py-3 font-bold rounded-full">
+          Me rappeler
+        </button>
+        <button type="button"
+                id="reminder-close"
+                class="flex-1 sp-btn sp-btn--glass py-3 font-bold rounded-full">
+          Annuler
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ─────────────────────────────────────────
+   Lecture audio : délègue à sp-player global
+   (défini dans base.html)
+───────────────────────────────────────── */
+document.addEventListener('click', function (e) {
+  const btn = e.target.closest('.js-play-btn');
+  if (!btn) return;
+  e.preventDefault();
+
+  const audioUrl = btn.dataset.audioUrl;
+  const title    = btn.dataset.title  || '';
+  const host     = btn.dataset.host   || 'The SafePlace by K';
+  const color    = btn.dataset.color  || '#00261b';
+
+  if (!audioUrl) return;
+
+  /* Cherche le lecteur global dans base.html ; l'expose via CustomEvent */
+  document.dispatchEvent(new CustomEvent('sp:play', {
+    detail: { audioUrl, title, host, color }
+  }));
+});
+
+/* ─────────────────────────────────────────
+   Scroll indicator (fallback si onClick HTML absent)
+───────────────────────────────────────── */
+const scrollBtn = document.querySelector('.sp-scroll-indicator');
+if (scrollBtn) {
+  scrollBtn.addEventListener('click', function () {
+    const target = document.querySelector('.sp-section');
+    if (target) target.scrollIntoView({ behavior: 'smooth' });
+  });
+}
+
+/* ─────────────────────────────────────────
+   Parallax croix (léger, requestAnimationFrame)
+───────────────────────────────────────── */
+(function initParallax() {
+  const crosses = document.querySelectorAll('.sp-parallax');
+  if (!crosses.length) return;
+  let ticking = false;
+
+  document.addEventListener('mousemove', function (e) {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(function () {
+      const cx = window.innerWidth  / 2;
+      const cy = window.innerHeight / 2;
+      const dx = (e.clientX - cx) / cx;
+      const dy = (e.clientY - cy) / cy;
+      crosses.forEach(function (el) {
+        const depth = parseFloat(el.dataset.depth) || 0.2;
+        const tx = dx * 20 * depth;
+        const ty = dy * 20 * depth;
+        el.style.transform = 'translate(' + tx + 'px, ' + ty + 'px)';
+      });
+      ticking = false;
+    });
+  });
+})();
+
+/* ─────────────────────────────────────────
+   Carousel podcasts (chevrons prev / next)
+───────────────────────────────────────── */
+(function initCarousel() {
+  const grid  = document.getElementById('podcast-carousel');
+  const prev  = document.getElementById('carousel-prev');
+  const next  = document.getElementById('carousel-next');
+  if (!grid || !prev || !next) return;
+
+  const cards = Array.from(grid.querySelectorAll('article'));
+  let page = 0;
+
+  function getPerPage() {
+    if (window.innerWidth >= 1280) return 3;
+    if (window.innerWidth >= 768)  return 2;
+    return 1;
+  }
+
+  function render() {
+    const perPage   = getPerPage();
+    const maxPage   = Math.max(0, Math.ceil(cards.length / perPage) - 1);
+    page = Math.min(page, maxPage);
+
+    cards.forEach(function (card, i) {
+      const visible = i >= page * perPage && i < (page + 1) * perPage;
+      card.style.display = visible ? '' : 'none';
+    });
+
+    prev.disabled = page === 0;
+    next.disabled = page >= maxPage;
+    prev.style.opacity = prev.disabled ? '0.4' : '';
+    next.style.opacity = next.disabled ? '0.4' : '';
+  }
+
+  prev.addEventListener('click', function () { page--; render(); });
+  next.addEventListener('click', function () { page++; render(); });
+  window.addEventListener('resize', render);
+  render();
+})();
+
+/* ─────────────────────────────────────────
+   Modale Rappel Live
+───────────────────────────────────────── */
+(function initReminderModal() {
+  const modal        = document.getElementById('reminder-modal');
+  const liveTitle    = document.getElementById('reminder-modal-live-title');
+  const emailInput   = document.getElementById('reminder-email');
+  const feedback     = document.getElementById('reminder-feedback');
+  const confirmBtn   = document.getElementById('reminder-confirm');
+  const closeBtn     = document.getElementById('reminder-close');
+  if (!modal) return;
+
+  function openModal(title) {
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    if (liveTitle) liveTitle.textContent = title || '';
+    if (emailInput) emailInput.value = '';
+    if (feedback) { feedback.textContent = ''; feedback.classList.add('hidden'); }
+    setTimeout(function () { if (emailInput) emailInput.focus(); }, 50);
+  }
+
+  function closeModal() {
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  }
+
+  document.addEventListener('click', function (e) {
+    if (e.target.closest('.js-reminder-btn')) {
+      const btn = e.target.closest('.js-reminder-btn');
+      openModal(btn.dataset.title);
+    }
+  });
+
+  if (closeBtn) closeBtn.addEventListener('click', closeModal);
+  modal.addEventListener('click', function (e) {
+    if (e.target === modal) closeModal();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeModal();
+  });
+
+  if (confirmBtn) {
+    confirmBtn.addEventListener('click', function () {
+      const email = emailInput ? emailInput.value.trim() : '';
+      if (!email || !email.includes('@')) {
+        if (feedback) {
+          feedback.textContent  = 'Veuillez entrer une adresse e-mail valide.';
+          feedback.className    = 'text-sm text-red-500';
+        }
+        return;
+      }
+
+      /* Envoie le rappel via l'endpoint de contact Django */
+      const csrfToken = document.cookie.match(/csrftoken=([^;]+)/);
+      fetch('{% url "contact" %}', {
+        method  : 'POST',
+        headers : {
+          'Content-Type'    : 'application/x-www-form-urlencoded',
+          'X-CSRFToken'     : csrfToken ? csrfToken[1] : '',
+        },
+        body: new URLSearchParams({
+          first_name : '',
+          last_name  : '',
+          email      : email,
+          subject    : 'Rappel Live',
+          message    : 'Je souhaite être rappelé(e) pour le live : ' + (liveTitle ? liveTitle.textContent : ''),
+        }),
+      })
+      .then(function () {
+        if (feedback) {
+          feedback.innerHTML = '<span class="material-symbols-outlined" style="font-size: 14px; vertical-align: middle; margin-right: 6px;">check</span>Vous serez notifié(e) par e-mail avant le live !';
+          feedback.className   = 'text-sm text-green-500';
+          feedback.classList.remove('hidden');
+        }
+        setTimeout(closeModal, 2000);
+      })
+      .catch(function () {
+        if (feedback) {
+          feedback.textContent = 'Une erreur est survenue. Réessayez plus tard.';
+          feedback.className   = 'text-sm text-red-500';
+          feedback.classList.remove('hidden');
+        }
+      });
+    });
+  }
+})();
+
+/* ─────────────────────────────────────────
+   Fade-in sections au scroll
+───────────────────────────────────────── */
+(function initFadeIn() {
+  if (!('IntersectionObserver' in window)) return;
+  const observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('sp-fade-in--visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.sp-fade-in').forEach(function (el) {
+    observer.observe(el);
+  });
+})();
+</script>
+{% endblock %}

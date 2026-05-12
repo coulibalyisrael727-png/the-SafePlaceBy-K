@@ -1,0 +1,744 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}S'abonner gratuitement — The SafePlace by K{% endblock %}
+
+{% block content %}
+<main class="max-w-container-max-width mx-auto px-4 md:px-margin-desktop py-10">
+
+  <!-- En-tête -->
+  <div class="mb-12 text-center">
+    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary-container text-on-secondary-container text-sm font-bold mb-5">
+      <span class="material-symbols-outlined text-[16px]" style="font-variation-settings:'FILL' 1" aria-hidden="true">notifications</span>
+      ABONNEMENT GRATUIT
+    </div>
+    <h1 class="font-display-lg text-primary text-3xl md:text-5xl mb-4">Restez connecté avec SafePlace</h1>
+    <p class="text-on-surface-variant text-body-lg max-w-xl mx-auto">
+      Recevez les notifications pour chaque nouvel épisode, émission live et vidéo publiés sur The SafePlace by K.
+    </p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-gutter max-w-5xl mx-auto">
+
+    <!-- Formulaire d'inscription -->
+    <div class="bg-surface-container-lowest p-8 rounded-[24px] border border-outline-variant shadow-[0px_4px_20px_rgba(11,61,46,0.05)]">
+
+      <h2 class="font-headline-md text-primary mb-6 text-xl">Créer mon abonnement</h2>
+
+      <!-- Feedback messages -->
+      <div id="errorMessage"
+           class="hidden bg-error-container text-on-error-container p-4 rounded-xl mb-6 border border-error text-sm"
+           role="alert" aria-live="assertive"></div>
+      <div id="successMessage"
+           class="hidden bg-secondary-container text-on-secondary-container p-6 rounded-xl mb-6 border border-secondary text-center"
+           role="status" aria-live="polite">
+        <span class="material-symbols-outlined text-4xl block mb-2" style="font-variation-settings:'FILL' 1" aria-hidden="true">mark_email_read</span>
+        <p class="font-bold text-lg mb-1">Bienvenue dans la communauté !</p>
+        <p class="text-sm opacity-80">Un e-mail de confirmation vous a été envoyé. Vérifiez votre boîte de réception.</p>
+      </div>
+
+      <form id="subscribeForm" novalidate class="space-y-5">
+        {% csrf_token %}
+
+        <!-- Prénom -->
+        <div>
+          <label for="sub-firstname" class="block font-label-md text-on-surface mb-2 text-sm font-bold">
+            Prénom <span class="text-error" aria-hidden="true">*</span>
+          </label>
+          <input type="text"
+                 id="sub-firstname"
+                 name="first_name"
+                 required
+                 autocomplete="given-name"
+                 placeholder="Votre prénom"
+                 class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-secondary/30 outline-none bg-surface-container-low text-on-surface text-sm transition-shadow" />
+        </div>
+
+        <!-- Nom -->
+        <div>
+          <label for="sub-lastname" class="block font-label-md text-on-surface mb-2 text-sm font-bold">
+            Nom
+          </label>
+          <input type="text"
+                 id="sub-lastname"
+                 name="last_name"
+                 autocomplete="family-name"
+                 placeholder="Votre nom"
+                 class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-secondary/30 outline-none bg-surface-container-low text-on-surface text-sm transition-shadow" />
+        </div>
+
+        <!-- Email -->
+        <div>
+          <label for="sub-email" class="block font-label-md text-on-surface mb-2 text-sm font-bold">
+            Adresse e-mail <span class="text-error" aria-hidden="true">*</span>
+          </label>
+          <input type="email"
+                 id="sub-email"
+                 name="email"
+                 required
+                 autocomplete="email"
+                 placeholder="votre@email.com"
+                 class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-secondary/30 outline-none bg-surface-container-low text-on-surface text-sm transition-shadow" />
+        </div>
+
+        <!-- Notifications -->
+        <fieldset>
+          <legend class="block font-label-md text-on-surface mb-3 text-sm font-bold">
+            Notifications <span class="text-on-surface-variant font-normal">(au moins une obligatoire)</span>
+          </legend>
+          <div class="space-y-2">
+            <label class="notification-chip flex items-center gap-3 px-4 py-3 rounded-xl border border-outline-variant cursor-pointer hover:bg-surface-container-high transition-colors text-sm text-on-surface select-none">
+              <input type="checkbox" name="notify_podcasts" value="true" checked class="sr-only">
+              <span class="notification-chip__check w-5 h-5 rounded border-2 border-outline flex-shrink-0 flex items-center justify-center text-[12px] transition-colors"></span>
+              <span class="material-symbols-outlined text-secondary text-[20px]" style="font-variation-settings:'FILL' 1">podcasts</span>
+              <span class="flex-1">Nouveaux podcasts</span>
+            </label>
+            <label class="notification-chip flex items-center gap-3 px-4 py-3 rounded-xl border border-outline-variant cursor-pointer hover:bg-surface-container-high transition-colors text-sm text-on-surface select-none">
+              <input type="checkbox" name="notify_live" value="true" checked class="sr-only">
+              <span class="notification-chip__check w-5 h-5 rounded border-2 border-outline flex-shrink-0 flex items-center justify-center text-[12px] transition-colors"></span>
+              <span class="material-symbols-outlined text-secondary text-[20px]" style="font-variation-settings:'FILL' 1">videocam</span>
+              <span class="flex-1">Émissions live</span>
+            </label>
+            <label class="notification-chip flex items-center gap-3 px-4 py-3 rounded-xl border border-outline-variant cursor-pointer hover:bg-surface-container-high transition-colors text-sm text-on-surface select-none">
+              <input type="checkbox" name="notify_videos" value="true" class="sr-only">
+              <span class="notification-chip__check w-5 h-5 rounded border-2 border-outline flex-shrink-0 flex items-center justify-center text-[12px] transition-colors"></span>
+              <span class="material-symbols-outlined text-secondary text-[20px]" style="font-variation-settings:'FILL' 1">smart_display</span>
+              <span class="flex-1">Nouvelles vidéos</span>
+            </label>
+          </div>
+        </fieldset>
+
+        <!-- Consentement -->
+        <label class="flex items-start gap-3 cursor-pointer group">
+          <input type="checkbox"
+                 id="sub-consent"
+                 name="consent"
+                 required
+                 class="sr-only">
+          <span id="consent-box"
+                class="mt-0.5 w-5 h-5 rounded border-2 border-outline flex-shrink-0 flex items-center justify-center transition-colors"
+                aria-hidden="true"></span>
+          <span class="text-sm text-on-surface-variant leading-relaxed">
+            J'accepte de recevoir les notifications de <strong class="text-on-surface">The SafePlace by K</strong>.
+            Vous pouvez vous désabonner à tout moment.
+            <span class="text-error" aria-hidden="true">*</span>
+          </span>
+        </label>
+
+        <!-- Bouton -->
+        <button type="submit"
+                id="submitBtn"
+                class="w-full bg-primary text-on-primary font-bold px-6 py-4 rounded-full hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2 text-sm">
+          <span class="material-symbols-outlined text-[20px]" style="font-variation-settings:'FILL' 1" aria-hidden="true">notifications</span>
+          S'abonner gratuitement
+        </button>
+
+        <p class="text-center text-xs text-on-surface-variant">
+          Abonnement 100% gratuit · Aucune donnée partagée
+        </p>
+      </form>
+    </div>
+
+    <!-- Infos latérales -->
+    <div class="space-y-6">
+
+      <!-- Avantages -->
+      <div class="bg-surface-container-lowest p-8 rounded-[24px] border border-outline-variant">
+        <h3 class="font-headline-md text-primary mb-5 text-lg">Ce que vous recevrez</h3>
+        <ul class="space-y-4 text-on-surface-variant text-sm">
+          <li class="flex gap-3 items-start">
+            <span class="material-symbols-outlined text-secondary flex-shrink-0 mt-0.5" style="font-variation-settings:'FILL' 1" aria-hidden="true">podcasts</span>
+            <span><strong class="text-on-surface">Nouveaux épisodes</strong> — notification dès la publication de chaque podcast</span>
+          </li>
+          <li class="flex gap-3 items-start">
+            <span class="material-symbols-outlined text-secondary flex-shrink-0 mt-0.5" style="font-variation-settings:'FILL' 1" aria-hidden="true">videocam</span>
+            <span><strong class="text-on-surface">Rappels live</strong> — soyez prévenu avant chaque émission en direct</span>
+          </li>
+          <li class="flex gap-3 items-start">
+            <span class="material-symbols-outlined text-secondary flex-shrink-0 mt-0.5" style="font-variation-settings:'FILL' 1" aria-hidden="true">smart_display</span>
+            <span><strong class="text-on-surface">Nouvelles vidéos</strong> — recevez les derniers contenus vidéo publiés</span>
+          </li>
+          <li class="flex gap-3 items-start">
+            <span class="material-symbols-outlined text-secondary flex-shrink-0 mt-0.5" style="font-variation-settings:'FILL' 1" aria-hidden="true">groups</span>
+            <span><strong class="text-on-surface">Communauté</strong> — faites partie de notre famille de croyants</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Témoignage -->
+      <div class="bg-primary p-8 rounded-[24px] text-on-primary relative overflow-hidden">
+        <div class="absolute top-3 right-6 text-6xl opacity-10 font-bold select-none" aria-hidden="true">
+          <span class="material-symbols-outlined">church</span>
+        </div>
+        <p class="text-on-primary/90 text-sm leading-relaxed italic mb-4">
+          "SafePlace m'accompagne chaque matin. Les podcasts de K sont une vraie source de paix et de foi dans ma journée."
+        </p>
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container font-bold text-sm" aria-hidden="true">M</div>
+          <div>
+            <p class="font-bold text-sm">Marie</p>
+            <p class="text-on-primary/60 text-xs">Abonnée depuis 6 mois</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Info confidentialité -->
+      <div class="bg-secondary-container/20 p-6 rounded-xl border border-secondary/30">
+        <div class="flex gap-3">
+          <span class="material-symbols-outlined text-secondary flex-shrink-0 mt-0.5">lock</span>
+          <div>
+            <h4 class="font-bold text-secondary text-sm mb-1">Vos données sont en sécurité</h4>
+            <p class="text-on-surface-variant text-xs">Nous ne partagerons jamais vos informations avec des tiers. Vous recevrez uniquement les notifications que vous avez choisies.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+
+</main>
+
+<!-- Section Donation sécurisée -->
+<div class="bg-gradient-to-b from-primary/10 to-secondary/5 py-20 mt-20 border-t border-outline-variant">
+  <div class="max-w-5xl mx-auto px-4 md:px-margin-desktop">
+    
+    <!-- En-tête donation -->
+    <div class="mb-12 text-center">
+      <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary-container text-on-secondary-container text-sm font-bold mb-5">
+        <span class="material-symbols-outlined text-[16px]" style="font-variation-settings:'FILL' 1" aria-hidden="true">volunteer_activism</span>
+        SOUTIEN OPTIONNEL
+      </div>
+      <h2 class="font-display-lg text-primary text-3xl md:text-5xl mb-4">Faire un don</h2>
+      <p class="text-on-surface-variant text-body-lg max-w-xl mx-auto">
+        Vos dons nous permettent de continuer à produire du contenu de qualité et à maintenir une communauté vivante et engagée.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
+      
+      <!-- Formulaire de donation -->
+      <div class="lg:col-span-2">
+        <div class="bg-surface-container-lowest p-8 rounded-[24px] border border-outline-variant shadow-[0px_4px_20px_rgba(11,61,46,0.05)]">
+          
+          <h3 class="font-headline-md text-primary mb-6 text-xl">Faire un don sécurisé</h3>
+
+          <!-- Messages de feedback -->
+          <div id="donationErrorMessage"
+               class="hidden bg-error-container text-on-error-container p-4 rounded-xl mb-6 border border-error text-sm"
+               role="alert" aria-live="assertive"></div>
+          <div id="donationSuccessMessage"
+               class="hidden bg-secondary-container text-on-secondary-container p-6 rounded-xl mb-6 border border-secondary text-center"
+               role="status" aria-live="polite">
+            <span class="material-symbols-outlined text-4xl block mb-2" style="font-variation-settings:'FILL' 1" aria-hidden="true">check_circle</span>
+            <p class="font-bold text-lg mb-1">Merci pour votre don !</p>
+            <p class="text-sm opacity-80">Votre contribution a été reçue avec succès. Que Dieu vous bénisse!</p>
+          </div>
+
+          <form id="donationForm" novalidate class="space-y-5">
+            {% csrf_token %}
+
+            <!-- Montant du don (options rapides + personnalisé) -->
+            <div>
+              <label class="block font-label-md text-on-surface mb-3 text-sm font-bold">
+                Montant du don <span class="text-error" aria-hidden="true">*</span>
+              </label>
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+                <button type="button" class="donation-amount-btn px-4 py-2 rounded-xl border-2 border-outline-variant bg-surface-container-low text-on-surface hover:bg-secondary-container hover:border-secondary transition-all font-bold text-sm" data-amount="500">
+                  5€
+                </button>
+                <button type="button" class="donation-amount-btn px-4 py-2 rounded-xl border-2 border-outline-variant bg-surface-container-low text-on-surface hover:bg-secondary-container hover:border-secondary transition-all font-bold text-sm" data-amount="1000">
+                  10€
+                </button>
+                <button type="button" class="donation-amount-btn px-4 py-2 rounded-xl border-2 border-outline-variant bg-surface-container-low text-on-surface hover:bg-secondary-container hover:border-secondary transition-all font-bold text-sm" data-amount="2500">
+                  25€
+                </button>
+                <button type="button" class="donation-amount-btn px-4 py-2 rounded-xl border-2 border-outline-variant bg-surface-container-low text-on-surface hover:bg-secondary-container hover:border-secondary transition-all font-bold text-sm" data-amount="5000">
+                  50€
+                </button>
+              </div>
+              <div class="flex gap-2">
+                <input type="number"
+                       id="customDonationAmount"
+                       name="donation_amount"
+                       min="1"
+                       placeholder="Montant personnalisé (en €)"
+                       class="flex-1 px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-secondary/30 outline-none bg-surface-container-low text-on-surface text-sm transition-shadow" />
+              </div>
+              <p class="text-xs text-on-surface-variant mt-2">Montant en centimes (ex: 1000 = 10€)</p>
+            </div>
+
+            <!-- Nom du donateur -->
+            <div>
+              <label for="donation-name" class="block font-label-md text-on-surface mb-2 text-sm font-bold">
+                Votre nom (optionnel)
+              </label>
+              <input type="text"
+                     id="donation-name"
+                     name="donor_name"
+                     placeholder="Comment souhaitez-vous être identifié?"
+                     class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-secondary/30 outline-none bg-surface-container-low text-on-surface text-sm transition-shadow" />
+            </div>
+
+            <!-- Email du donateur -->
+            <div>
+              <label for="donation-email" class="block font-label-md text-on-surface mb-2 text-sm font-bold">
+                Adresse e-mail <span class="text-error" aria-hidden="true">*</span>
+              </label>
+              <input type="email"
+                     id="donation-email"
+                     name="donor_email"
+                     required
+                     placeholder="votre@email.com"
+                     class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-secondary/30 outline-none bg-surface-container-low text-on-surface text-sm transition-shadow" />
+            </div>
+
+            <!-- Message optionnel -->
+            <div>
+              <label for="donation-message" class="block font-label-md text-on-surface mb-2 text-sm font-bold">
+                Message d'encouragement (optionnel)
+              </label>
+              <textarea id="donation-message"
+                        name="donor_message"
+                        rows="3"
+                        placeholder="Partagez vos pensées..."
+                        class="w-full px-4 py-3 border border-outline-variant rounded-xl focus:ring-2 focus:ring-secondary/30 outline-none bg-surface-container-low text-on-surface text-sm transition-shadow resize-none"></textarea>
+            </div>
+
+            <!-- Paiement Stripe -->
+            <div>
+              <label class="block font-label-md text-on-surface mb-2 text-sm font-bold">
+                Informations de paiement <span class="text-error" aria-hidden="true">*</span>
+              </label>
+              <div id="stripe-card" class="p-4 border border-outline-variant rounded-xl bg-surface-container-low"></div>
+              <div id="stripe-errors" class="text-error text-sm mt-2"></div>
+            </div>
+
+            <!-- Consentement -->
+            <label class="flex items-start gap-3 cursor-pointer group">
+              <input type="checkbox"
+                     id="donation-consent"
+                     name="donation_consent"
+                     required
+                     class="sr-only">
+              <span id="donation-consent-box"
+                    class="mt-0.5 w-5 h-5 rounded border-2 border-outline flex-shrink-0 flex items-center justify-center transition-colors"
+                    aria-hidden="true"></span>
+              <span class="text-sm text-on-surface-variant leading-relaxed">
+                J'accepte que mes données soient utilisées pour traiter ce don de manière sécurisée.
+                <span class="text-error" aria-hidden="true">*</span>
+              </span>
+            </label>
+
+            <!-- Bouton -->
+            <button type="submit"
+                    id="donationSubmitBtn"
+                    class="w-full bg-primary text-on-primary font-bold px-6 py-4 rounded-full hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2 text-sm">
+              <span class="material-symbols-outlined text-[20px]" style="font-variation-settings:'FILL' 1" aria-hidden="true">favorite</span>
+              Faire un don sécurisé
+            </button>
+
+            <p class="text-center text-xs text-on-surface-variant">
+              <span class="material-symbols-outlined text-[14px] align-middle">lock</span> Paiement sécurisé via Stripe
+            </p>
+          </form>
+        </div>
+      </div>
+
+      <!-- Infos latérales donation -->
+      <div class="space-y-6">
+        
+        <!-- Impact du don -->
+        <div class="bg-surface-container-lowest p-6 rounded-[24px] border border-outline-variant">
+          <h4 class="font-headline-md text-primary mb-4 text-lg">Impact de votre don</h4>
+          <ul class="space-y-3 text-on-surface-variant text-sm">
+            <li class="flex gap-2 items-start">
+              <span class="material-symbols-outlined text-secondary flex-shrink-0 mt-0.5 text-[18px]">check_circle</span>
+              <span><strong class="text-on-surface">5€</strong> — Soutenir la production d'un épisode</span>
+            </li>
+            <li class="flex gap-2 items-start">
+              <span class="material-symbols-outlined text-secondary flex-shrink-0 mt-0.5 text-[18px]">check_circle</span>
+              <span><strong class="text-on-surface">10€</strong> — Supporter un live streaming</span>
+            </li>
+            <li class="flex gap-2 items-start">
+              <span class="material-symbols-outlined text-secondary flex-shrink-0 mt-0.5 text-[18px]">check_circle</span>
+              <span><strong class="text-on-surface">25€</strong> — Financer du matériel audio</span>
+            </li>
+            <li class="flex gap-2 items-start">
+              <span class="material-symbols-outlined text-secondary flex-shrink-0 mt-0.5 text-[18px]">check_circle</span>
+              <span><strong class="text-on-surface">50€+</strong> — Créer des contenus exclusifs</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Témoignage -->
+        <div class="bg-secondary p-6 rounded-[24px] text-on-secondary relative overflow-hidden">
+          <div class="absolute -top-8 -right-8 text-8xl opacity-10">
+            <span class="material-symbols-outlined">favorite</span>
+          </div>
+          <p class="text-on-secondary/90 text-sm leading-relaxed italic mb-4 relative z-10">
+            "Grâce à vos dons, nous pouvons continuer à servir la communauté avec passion et intégrité."
+          </p>
+          <p class="font-bold text-sm relative z-10">— L'équipe SafePlace</p>
+        </div>
+
+        <!-- Sécurité -->
+        <div class="bg-secondary-container/20 p-6 rounded-xl border border-secondary/30">
+          <div class="flex gap-3">
+            <span class="material-symbols-outlined text-secondary flex-shrink-0 mt-0.5">lock</span>
+            <div>
+              <h5 class="font-bold text-secondary text-sm mb-1">100% Sécurisé</h5>
+              <p class="text-on-surface-variant text-xs">Vos données de paiement sont protégées par Stripe, leader mondial du paiement en ligne.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+/* ─────────────────────────────────────────
+   Chips de notifications
+───────────────────────────────────────── */
+document.querySelectorAll('.notification-chip').forEach(function (label) {
+  const input = label.querySelector('input[type="checkbox"]');
+  const check = label.querySelector('.notification-chip__check');
+
+  function sync() {
+    if (input.checked) {
+      label.classList.add('bg-secondary-container', 'border-secondary', 'text-on-secondary-container');
+      label.classList.remove('border-outline-variant');
+      check.innerHTML = '<span class="material-symbols-outlined" style="font-size: 12px;">check</span>';
+      check.classList.add('bg-secondary', 'border-secondary', 'text-white');
+    } else {
+      label.classList.remove('bg-secondary-container', 'border-secondary', 'text-on-secondary-container');
+      label.classList.add('border-outline-variant');
+      check.textContent = '';
+      check.classList.remove('bg-secondary', 'border-secondary', 'text-white');
+    }
+  }
+
+  input.addEventListener('change', sync);
+  sync();
+});
+
+/* ─────────────────────────────────────────
+   Checkbox consentement custom
+───────────────────────────────────────── */
+(function () {
+  const input = document.getElementById('sub-consent');
+  const box   = document.getElementById('consent-box');
+  if (!input || !box) return;
+
+  function sync() {
+    if (input.checked) {
+      box.classList.add('bg-primary', 'border-primary');
+      box.innerHTML = '<svg width="12" height="10" viewBox="0 0 12 10" fill="none" aria-hidden="true"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    } else {
+      box.classList.remove('bg-primary', 'border-primary');
+      box.innerHTML = '';
+    }
+  }
+
+  input.addEventListener('change', sync);
+  box.parentElement.addEventListener('click', function () {
+    input.checked = !input.checked;
+    sync();
+  });
+  sync();
+})();
+
+/* ─────────────────────────────────────────
+   Soumission du formulaire
+───────────────────────────────────────── */
+document.getElementById('subscribeForm').addEventListener('submit', function (e) {
+  e.preventDefault();
+
+  const form = this;
+  const errorDiv = document.getElementById('errorMessage');
+  const successDiv = document.getElementById('successMessage');
+  const submitBtn = document.getElementById('submitBtn');
+
+  errorDiv.classList.add('hidden');
+  successDiv.classList.add('hidden');
+
+  const firstName = document.getElementById('sub-firstname').value.trim();
+  const lastName = document.getElementById('sub-lastname').value.trim();
+  const email = document.getElementById('sub-email').value.trim();
+  const consent = document.getElementById('sub-consent').checked;
+
+  if (!firstName || !email) {
+    errorDiv.textContent = 'Veuillez remplir le prénom et l\'email.';
+    errorDiv.classList.remove('hidden');
+    return;
+  }
+
+  if (!consent) {
+    errorDiv.textContent = 'Vous devez accepter les conditions pour vous abonner.';
+    errorDiv.classList.remove('hidden');
+    return;
+  }
+
+  // Récupérer les notifications cochées
+  const notifications = {};
+  document.querySelectorAll('.notification-chip input[type="checkbox"]').forEach(function (input) {
+    notifications[input.getAttribute('name')] = input.checked;
+  });
+
+  if (!notifications.notify_podcasts && !notifications.notify_live && !notifications.notify_videos) {
+    errorDiv.textContent = 'Veuillez sélectionner au moins une notification.';
+    errorDiv.classList.remove('hidden');
+    return;
+  }
+
+  /* État chargement */
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<span class="material-symbols-outlined text-[20px] animate-spin" aria-hidden="true">progress_activity</span> Inscription en cours…';
+
+  const csrfToken = (document.cookie.match(/csrftoken=([^;]+)/) || [])[1] || '';
+
+  fetch('{% url "create_subscription" %}', {
+    method  : 'POST',
+    headers : {
+      'Content-Type': 'application/json',
+      'X-CSRFToken' : csrfToken,
+    },
+    body: JSON.stringify({
+      first_name: firstName,
+      last_name: lastName,
+      email: email,
+      notify_podcasts: notifications.notify_podcasts,
+      notify_live: notifications.notify_live,
+      notify_videos: notifications.notify_videos,
+    }),
+  })
+  .then(function (res) {
+    if (!res.ok) throw new Error('Erreur réseau');
+    return res.json();
+  })
+  .then(function (data) {
+    if (data.success) {
+      form.classList.add('hidden');
+      successDiv.classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      throw new Error(data.error || 'Erreur lors de l\'abonnement');
+    }
+  })
+  .catch(function (err) {
+    errorDiv.textContent = 'Une erreur est survenue. Veuillez réessayer ou nous contacter directement.';
+    errorDiv.classList.remove('hidden');
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = '<span class="material-symbols-outlined text-[20px]" style="font-variation-settings:\'FILL\' 1" aria-hidden="true">notifications</span> S\'abonner gratuitement';
+  });
+});
+</script>
+
+<!-- Stripe -->
+<script src="https://js.stripe.com/v3/"></script>
+
+<script>
+/* ─────────────────────────────────────────
+   Gestion des montants de donation
+───────────────────────────────────────── */
+let selectedAmount = null;
+
+document.querySelectorAll('.donation-amount-btn').forEach(function (btn) {
+  btn.addEventListener('click', function (e) {
+    e.preventDefault();
+    selectedAmount = parseInt(this.getAttribute('data-amount'));
+    document.getElementById('customDonationAmount').value = selectedAmount / 100;
+    
+    // Highlight du bouton sélectionné
+    document.querySelectorAll('.donation-amount-btn').forEach(function (b) {
+      b.classList.remove('bg-secondary-container', 'border-secondary', 'text-on-secondary-container');
+      b.classList.add('bg-surface-container-low', 'border-outline-variant');
+    });
+    btn.classList.remove('bg-surface-container-low', 'border-outline-variant');
+    btn.classList.add('bg-secondary-container', 'border-secondary', 'text-on-secondary-container');
+  });
+});
+
+/* ─────────────────────────────────────────
+   Checkbox consentement donation
+───────────────────────────────────────── */
+(function () {
+  const input = document.getElementById('donation-consent');
+  const box   = document.getElementById('donation-consent-box');
+  if (!input || !box) return;
+
+  function sync() {
+    if (input.checked) {
+      box.classList.add('bg-primary', 'border-primary');
+      box.innerHTML = '<svg width="12" height="10" viewBox="0 0 12 10" fill="none" aria-hidden="true"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    } else {
+      box.classList.remove('bg-primary', 'border-primary');
+      box.innerHTML = '';
+    }
+  }
+
+  input.addEventListener('change', sync);
+  box.parentElement.addEventListener('click', function () {
+    input.checked = !input.checked;
+    sync();
+  });
+  sync();
+})();
+
+/* ─────────────────────────────────────────
+   Initialisation Stripe
+───────────────────────────────────────── */
+const stripe = Stripe('{{ stripe_public_key }}');
+const elements = stripe.elements();
+const cardElement = elements.create('card', {
+  hidePostalCode: true,
+  style: {
+    base: {
+      fontSize: '14px',
+      color: '#1c1c1c',
+      fontFamily: 'Roboto, sans-serif',
+      '::placeholder': {
+        color: '#999',
+      },
+    },
+    invalid: {
+      color: '#dc2626',
+    },
+  },
+});
+cardElement.mount('#stripe-card');
+
+cardElement.addEventListener('change', function (event) {
+  const displayError = document.getElementById('stripe-errors');
+  if (event.error) {
+    displayError.textContent = event.error.message;
+  } else {
+    displayError.textContent = '';
+  }
+});
+
+/* ─────────────────────────────────────────
+   Soumission du formulaire de donation
+───────────────────────────────────────── */
+document.getElementById('donationForm').addEventListener('submit', async function (e) {
+  e.preventDefault();
+
+  const form = this;
+  const errorDiv = document.getElementById('donationErrorMessage');
+  const successDiv = document.getElementById('donationSuccessMessage');
+  const submitBtn = document.getElementById('donationSubmitBtn');
+
+  errorDiv.classList.add('hidden');
+  successDiv.classList.add('hidden');
+
+  // Récupération des données
+  let amount = parseInt(document.getElementById('customDonationAmount').value) * 100; // en centimes
+  const donorName = document.getElementById('donation-name').value.trim() || 'Anonyme';
+  const donorEmail = document.getElementById('donation-email').value.trim();
+  const donorMessage = document.getElementById('donation-message').value.trim();
+  const consent = document.getElementById('donation-consent').checked;
+
+  // Validation
+  if (!amount || amount <= 0) {
+    errorDiv.textContent = 'Veuillez entrer un montant valide.';
+    errorDiv.classList.remove('hidden');
+    return;
+  }
+  if (!donorEmail || !donorEmail.includes('@')) {
+    errorDiv.textContent = 'Veuillez entrer une adresse e-mail valide.';
+    errorDiv.classList.remove('hidden');
+    return;
+  }
+  if (!consent) {
+    errorDiv.textContent = 'Vous devez accepter les conditions pour faire un don.';
+    errorDiv.classList.remove('hidden');
+    return;
+  }
+
+  /* État chargement */
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<span class="material-symbols-outlined text-[20px] animate-spin" aria-hidden="true">progress_activity</span> Traitement en cours…';
+
+  const csrfToken = (document.cookie.match(/csrftoken=([^;]+)/) || [])[1] || '';
+
+  try {
+    // 1. Créer la donation en base de données
+    const donationResponse = await fetch('{% url "create_donation" %}', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken,
+      },
+      body: JSON.stringify({
+        amount: amount / 100, // en euros
+        email: donorEmail,
+        name: donorName,
+        message: donorMessage,
+      }),
+    });
+
+    if (!donationResponse.ok) throw new Error('Erreur serveur');
+    const donationData = await donationResponse.json();
+
+    if (!donationData.success) throw new Error(donationData.error);
+
+    const clientSecret = donationData.client_secret;
+    const donationId = donationData.donation_id;
+
+    // 2. Créer le Payment Intent avec Stripe
+    const { error, paymentIntent } = await stripe.confirmPayment({
+      clientSecret: clientSecret,
+      confirmParams: {
+        payment_method: {
+          card: cardElement,
+          billing_details: {
+            name: donorName,
+            email: donorEmail,
+          },
+        },
+        return_url: window.location.origin + '/donate/',
+      },
+    });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (paymentIntent.status === 'succeeded') {
+      // 3. Confirmer la donation
+      const confirmResponse = await fetch('{% url "confirm_donation" %}', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken,
+        },
+        body: JSON.stringify({
+          donation_id: donationId,
+        }),
+      });
+
+      const confirmData = await confirmResponse.json();
+
+      if (confirmData.success) {
+        form.classList.add('hidden');
+        successDiv.classList.remove('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        throw new Error(confirmData.error);
+      }
+    } else {
+      throw new Error('Paiement non confirmé');
+    }
+  } catch (err) {
+    errorDiv.textContent = err.message || 'Une erreur est survenue. Veuillez réessayer.';
+    errorDiv.classList.remove('hidden');
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = '<span class="material-symbols-outlined text-[20px]" style="font-variation-settings:\'FILL\' 1" aria-hidden="true">favorite</span> Faire un don sécurisé';
+  }
+});
+</script>
+
+{% endblock %}
