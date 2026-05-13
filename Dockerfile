@@ -57,4 +57,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 EXPOSE 8000
 
 # Commande de démarrage
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "4", "--timeout", "120", "Safeplace.wsgi:application"]
+CMD sh -c "python manage.py migrate && gunicorn --bind 0.0.0.0:8000 --workers 4 --timeout 120 Safeplace.wsgi:application"
