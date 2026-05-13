@@ -14,15 +14,15 @@ from pathlib import Path
 import os
 
 # Application principale URL pour le dashboard
-MAIN_SITE_URL = 'http://127.0.0.1:8000'
-MAIN_API_URL = 'http://127.0.0.1:8000/api/v1/'
-DASHBOARD_API_KEY = 'safeplace_secret_dashboard_key_2026'
+MAIN_SITE_URL = os.environ.get('MAIN_SITE_URL', 'http://127.0.0.1:8000')
+MAIN_API_URL = os.environ.get('MAIN_API_URL', 'http://127.0.0.1:8000/api/v1/')
+DASHBOARD_API_KEY = os.environ.get('DASHBOARD_API_KEY', 'safeplace_secret_dashboard_key_2026')
 
 # Configuration des dons
-DONATION_PAYPAL_URL = 'https://paypal.me/safeplacebyk'
-DONATION_KOFI_URL = 'https://ko-fi.com/safeplacebyk'
-DONATION_BANK_LABEL = 'The SafePlace by K'
-DONATION_BANK_IBAN = 'FR76 1234 5678 9101 1121 3141 516'
+DONATION_PAYPAL_URL = os.environ.get('DONATION_PAYPAL_URL', 'https://paypal.me/safeplacebyk')
+DONATION_KOFI_URL = os.environ.get('DONATION_KOFI_URL', 'https://ko-fi.com/safeplacebyk')
+DONATION_BANK_LABEL = os.environ.get('DONATION_BANK_LABEL', 'The SafePlace by K')
+DONATION_BANK_IBAN = os.environ.get('DONATION_BANK_IBAN', 'FR76 1234 5678 9101 1121 3141 516')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -32,10 +32,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-q3=+123_-!0of8m5-!v1tpw!uflyp$$zixw!d^66d6a(hgpa@i'
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-q3=+123_-!0of8m5-!v1tpw!uflyp$$zixw!d^66d6a(hgpa@i')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'testserver']
 

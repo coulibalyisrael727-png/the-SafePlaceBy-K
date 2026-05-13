@@ -55,17 +55,17 @@ def podcasts(request):
     selected_cat = request.GET.get('categorie')
     if selected_cat:
         if str(selected_cat).isdigit():
-            filtered_episodes = episodes.filter(category__id=selected_cat)
+            episodes_filtered = episodes.filter(category__id=selected_cat)
         else:
             slug = slugify(str(selected_cat).replace('_', '-'))
             cat_ids = [
                 c.id for c in categories
                 if slugify(c.name) == slug
             ]
-            filtered_episodes = episodes.filter(category_id__in=cat_ids) if cat_ids else episodes.none()
+            episodes_filtered = episodes.filter(category_id__in=cat_ids) if cat_ids else episodes.none()
     else:
-        filtered_episodes = episodes
-    context = {'episodes': filtered_episodes, 'categories': categories, 'selected_cat': selected_cat}
+        episodes_filtered = episodes
+    context = {'episodes': episodes_filtered, 'categories': categories, 'selected_cat': selected_cat}
     return render(request, 'podcasts.html', context)
 
 
@@ -75,14 +75,14 @@ def videos(request):
     selected_cat = request.GET.get('categorie')
     if selected_cat:
         if str(selected_cat).isdigit():
-            filtered_episodes = episodes.filter(category__id=selected_cat)
+            episodes_filtered = episodes.filter(category__id=selected_cat)
         else:
             slug = slugify(str(selected_cat).replace('_', '-'))
             cat_ids = [c.id for c in categories if slugify(c.name) == slug]
-            filtered_episodes = episodes.filter(category_id__in=cat_ids) if cat_ids else episodes.none()
+            episodes_filtered = episodes.filter(category_id__in=cat_ids) if cat_ids else episodes.none()
     else:
-        filtered_episodes = episodes
-    context = {'episodes': filtered_episodes, 'categories': categories, 'selected_cat': selected_cat}
+        episodes_filtered = episodes
+    context = {'episodes': episodes_filtered, 'categories': categories, 'selected_cat': selected_cat}
     return render(request, 'videos.html', context)
 
 
@@ -569,8 +569,9 @@ def contact(request):
                         [settings.ADMINS[0][1]] if settings.ADMINS else ['admin@safeplace.com'],
                         fail_silently=True
                     )
-                except Exception:
-                    pass
+                except Exception as e:
+                    import logging
+                    logging.getLogger(__name__).warning("Erreur envoi email: %s", str(e))
                 
                 # Envoyer une confirmation à l'utilisateur
                 try:
@@ -581,8 +582,9 @@ def contact(request):
                         [email],
                         fail_silently=True
                     )
-                except Exception:
-                    pass
+                except Exception as e:
+                    import logging
+                    logging.getLogger(__name__).warning("Erreur envoi email confirmation: %s", str(e))
                 
                 success = True
         except Exception as e:

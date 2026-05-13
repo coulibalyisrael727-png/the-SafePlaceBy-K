@@ -144,7 +144,7 @@ services:
     ports:
       - "8001:8001"
     environment:
-      - MAIN_APP_API_URL=http://main-app:8000/api/v1/
+      - MAIN_APP_API_URL=https://main-app:8000/api/v1/
     depends_on:
       - main-app
 ```

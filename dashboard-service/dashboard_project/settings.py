@@ -3,17 +3,18 @@ Django settings for dashboard microservice.
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-dashboard-dev-key-change-in-production'
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-dashboard-dev-key-change-in-production')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 # Application definition
 INSTALLED_APPS = [
@@ -103,5 +104,5 @@ LOGOUT_REDIRECT_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
 
 # Main App API Configuration
-MAIN_API_URL = 'http://127.0.0.1:8000/api/v1/'
-MAIN_SITE_URL = 'http://127.0.0.1:8000'
+MAIN_API_URL = os.environ.get('MAIN_API_URL', 'http://127.0.0.1:8000/api/v1/')
+MAIN_SITE_URL = os.environ.get('MAIN_SITE_URL', 'http://127.0.0.1:8000')

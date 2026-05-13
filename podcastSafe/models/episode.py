@@ -10,14 +10,16 @@ from .category import Category
 class Episode(models.Model):
     """Model for podcast and video episodes"""
     TYPE_CHOICES = [('podcast', 'Podcast'), ('video', 'Vidéo')]
+    MAX_TYPE_LENGTH = 10
+    MAX_DURATION_LENGTH = 10
 
     title = models.CharField(max_length=200)
     description = models.TextField()
-    episode_type = models.CharField(max_length=10, choices=TYPE_CHOICES, default='podcast')
+    episode_type = models.CharField(max_length=MAX_TYPE_LENGTH, choices=TYPE_CHOICES, default='podcast')
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
     audio_url = models.URLField(blank=True)
     video_url = models.URLField(blank=True)
-    duration = models.CharField(max_length=10, blank=True)
+    duration = models.CharField(max_length=MAX_DURATION_LENGTH, blank=True)
     host = models.CharField(max_length=100, blank=True, default='The SafePlace by K')
     cover_color = models.CharField(max_length=7, default='#00261b')
     views_count = models.IntegerField(default=0)

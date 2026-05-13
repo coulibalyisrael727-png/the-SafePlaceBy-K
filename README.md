@@ -87,7 +87,7 @@ python manage.py migrate
 python manage.py runserver
 ```
 
-## [USAGE] Usage
+## Usage
 
 ### Pour les Utilisateurs
 
@@ -134,7 +134,7 @@ docker-compose exec web python manage.py shell
 docker-compose exec web python manage.py createsuperuser
 ```
 
-## [API] Documentation API
+## API
 
 ### Base URL
 ```

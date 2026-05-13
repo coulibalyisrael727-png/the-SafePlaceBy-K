@@ -1,0 +1,100 @@
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.#*
+.DS_Store
+
+# Django
+*.log
+local_settings.py
+/media
+/staticfiles
+/static
+*.sqlite3
+db.sqlite3
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Docker
+docker-compose.override.yml
+.dockerignore
+
+# Git
+.git/
+
+# OS
+.DS_Store
+Thumbs.db
+*.bak
+
+# Backups
+/backups
+*.sql
+*.dump
+
+# SSL certificates (but keep the directory)
+ssl/*.pem
+ssl/*.crt
+ssl/*.key
+!ssl/.gitkeep
+
+# Node (if applicable)
+node_modules/
+package-lock.json
+yarn.lock
+
+# Logs
+/logs
+*.log
+
+# Misc
+.vagrant/
+.project
+.pydevproject
+*.sublime-project
+*.sublime-workspace
