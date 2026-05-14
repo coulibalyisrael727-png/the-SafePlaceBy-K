@@ -67,6 +67,8 @@ docker-compose.override.yml
 # Git
 .git/
 
+dashboard-service/
+
 # OS
 .DS_Store
 Thumbs.db
