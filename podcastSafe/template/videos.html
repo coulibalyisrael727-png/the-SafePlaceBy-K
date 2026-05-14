@@ -1,58 +1,313 @@
 {% extends 'base.html' %}
 {% block title %}Vidéos — The SafePlace by K{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Video Modal ── */
+.vid-modal-overlay {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+  align-items: center; justify-content: center; padding: 16px;
+}
+.vid-modal-overlay.open { display: flex; }
+.vid-modal-box {
+  background: #0a1a12; border-radius: 20px; overflow: hidden;
+  width: 100%; max-width: 900px;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.6);
+  animation: modalIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes modalIn { from { transform: scale(0.88); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.vid-modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px; border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.vid-modal-title { color: #fff; font-weight: 700; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70%; }
+.vid-modal-close {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: rgba(255,255,255,0.1); border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0;
+  transition: background 0.2s;
+}
+.vid-modal-close:hover { background: rgba(255,255,255,0.2); }
+.vid-modal-player { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; }
+.vid-modal-player iframe, .vid-modal-player video {
+  position: absolute; inset: 0; width: 100%; height: 100%; border: none;
+}
+.vid-modal-footer {
+  padding: 14px 18px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+/* ── Share Panel ── */
+.share-panel {
+  display: none; position: absolute; bottom: calc(100% + 8px); right: 0;
+  background: #fff; border-radius: 16px; padding: 16px;
+  box-shadow: 0 12px 40px rgba(0,38,27,0.18); z-index: 20; min-width: 220px;
+  animation: fadeDown 0.2s ease;
+}
+.share-panel.open { display: block; }
+@keyframes fadeDown { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+.share-btn-item {
+  display: flex; align-items: center; gap: 10px; padding: 9px 12px;
+  border-radius: 10px; text-decoration: none; color: #1a1c1b; font-size: 0.875rem; font-weight: 600;
+  transition: background 0.15s; border: none; background: none; cursor: pointer; width: 100%;
+}
+.share-btn-item:hover { background: #f4f4f1; }
+
+/* ── Card hover ── */
+.vid-card-wrap { position: relative; }
+.vid-thumb {
+  position: relative; width: 100%; aspect-ratio: 16/9;
+  border-radius: 14px; overflow: hidden; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.vid-thumb .play-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 60%);
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s;
+}
+.vid-thumb:hover .play-overlay { background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.2) 100%); }
+.play-fab-vid {
+  width: 56px; height: 56px; border-radius: 50%; background: rgba(159,247,0,0.92);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 20px rgba(159,247,0,0.5); transition: transform 0.2s;
+}
+.vid-thumb:hover .play-fab-vid { transform: scale(1.12); }
+</style>
+{% endblock %}
+
 {% block content %}
-<main class="max-w-container-max-width mx-auto px-4 md:px-margin-desktop py-10">
+<main style="max-width:1440px;margin:0 auto;padding:2.5rem 1rem 2rem">
 
   <div class="mb-10">
-    <h1 class="font-display-lg text-primary text-3xl md:text-5xl mb-3">Nos Vidéos</h1>
-    <p class="text-on-surface-variant text-body-lg">Enseignements et contenus vidéo pour nourrir votre foi.</p>
+    <h1 class="font-bold text-primary text-3xl md:text-5xl mb-2" style="font-family:'Montserrat',sans-serif">Nos Vidéos</h1>
+    <p class="text-on-surface-variant text-lg">Enseignements et contenus vidéo pour nourrir votre foi.</p>
   </div>
 
+  <!-- Filtres -->
   <div class="flex gap-3 flex-wrap mb-8">
-    <a href="{% url 'videos' %}" class="px-5 py-2 rounded-full font-label-md border transition-all {% if not selected_cat %}bg-primary text-on-primary border-primary{% else %}bg-surface-container text-on-surface-variant border-outline-variant hover:bg-surface-container-high{% endif %}">Toutes</a>
+    <a href="{% url 'videos' %}" class="px-5 py-2 rounded-full font-bold text-sm border transition-all {% if not selected_cat %}bg-primary text-on-primary border-primary{% else %}bg-surface-container text-on-surface-variant border-outline-variant hover:bg-surface-container-high{% endif %}">Toutes</a>
     {% for cat in categories %}
-    <a href="?categorie={{ cat.id }}" class="px-5 py-2 rounded-full font-label-md border transition-all {% if selected_cat == cat.id|stringformat:'s' %}bg-primary text-on-primary border-primary{% else %}bg-surface-container text-on-surface-variant border-outline-variant hover:bg-surface-container-high{% endif %}">{{ cat.name }}</a>
+    <a href="?categorie={{ cat.id }}" class="px-5 py-2 rounded-full font-bold text-sm border transition-all {% if selected_cat == cat.id|stringformat:'s' %}bg-primary text-on-primary border-primary{% else %}bg-surface-container text-on-surface-variant border-outline-variant hover:bg-surface-container-high{% endif %}">{{ cat.name }}</a>
     {% endfor %}
   </div>
 
   {% if episodes %}
-  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-gutter">
+  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
     {% for episode in episodes %}
-    <div class="bg-surface-container-low p-6 rounded-[24px] hover:shadow-[0px_4px_20px_rgba(11,61,46,0.08)] transition-all group border border-slate-100">
-      <a href="{% url 'podcast_detail' episode.pk %}" class="relative w-full aspect-video rounded-xl overflow-hidden mb-6 block" style="background:linear-gradient(135deg,{{ episode.cover_color }},#416900)">
-        <span class="material-symbols-outlined text-white text-7xl absolute inset-0 m-auto w-fit h-fit opacity-90 group-hover:scale-105 transition-transform">smart_display</span>
-        <span class="absolute top-4 left-4 bg-black/50 text-white px-3 py-1 rounded-full text-xs font-bold backdrop-blur-md">Vidéo</span>
-      </a>
-      <div class="flex items-center justify-between mb-2">
-        <span class="text-secondary font-label-md px-3 py-1 bg-secondary-container rounded-full text-xs">{{ episode.category.name|default:"Général" }}</span>
-        <span class="text-on-surface-variant text-label-sm">{{ episode.duration|default:"—" }}</span>
-      </div>
-      <h3 class="font-headline-md text-primary mb-2 line-clamp-2 text-xl">{{ episode.title }}</h3>
-      <p class="text-on-surface-variant text-body-md mb-5 line-clamp-2">{{ episode.description }}</p>
-      <div class="flex items-center justify-between border-t border-surface-container pt-4">
-        <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-primary text-xs font-bold">K</div>
-          <div>
-            <span class="text-on-surface font-label-md text-sm block">{{ episode.host|default:"The SafePlace by K" }}</span>
-            <span class="text-on-surface-variant text-xs">{{ episode.created_at|date:"d M Y" }}</span>
+    <div class="vid-card-wrap bg-white rounded-[24px] border border-slate-100 overflow-hidden shadow-sm hover:shadow-[0px_8px_32px_rgba(11,61,46,0.1)] transition-all">
+
+      <!-- Thumbnail cliquable → ouvre le player -->
+      <div class="vid-thumb"
+           style="background:linear-gradient(135deg,{{ episode.cover_color }},#416900)"
+           data-video-url="{{ episode.get_youtube_embed_url|default:episode.video_url }}"
+           data-video-type="{% if episode.get_youtube_embed_url %}youtube{% else %}direct{% endif %}"
+           data-title="{{ episode.title }}"
+           data-episode-url="{% url 'podcast_detail' episode.pk %}"
+           onclick="openVideoModal(this)">
+        <span class="material-symbols-outlined text-white opacity-25" style="font-size:80px">smart_display</span>
+        <div class="play-overlay">
+          <div class="play-fab-vid">
+            <span class="material-symbols-outlined text-[#00261b]" style="font-size:28px;font-variation-settings:'FILL' 1">play_arrow</span>
           </div>
         </div>
-        <a href="{% url 'podcast_detail' episode.pk %}" class="flex items-center gap-1 text-secondary hover:underline font-bold text-sm">
-          Regarder <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
-        </a>
+        <span class="absolute top-3 left-3 bg-black/55 text-white px-2.5 py-1 rounded-full text-xs font-bold backdrop-blur-sm">Vidéo</span>
+        {% if episode.duration %}
+        <span class="absolute bottom-3 right-3 bg-black/55 text-white px-2 py-0.5 rounded text-xs font-bold">{{ episode.duration }}</span>
+        {% endif %}
+      </div>
+
+      <!-- Infos card -->
+      <div class="p-5">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-bold px-2.5 py-1 rounded-full" style="background:rgba(159,247,0,0.12);color:#416900">{{ episode.category.name|default:"Général" }}</span>
+        </div>
+        <h3 class="font-bold text-primary text-lg mb-1 line-clamp-2" style="font-family:'Montserrat',sans-serif">{{ episode.title }}</h3>
+        <p class="text-on-surface-variant text-sm mb-4 line-clamp-2">{{ episode.description }}</p>
+
+        <div class="flex items-center justify-between pt-4 border-t border-surface-container">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container text-xs font-bold">K</div>
+            <div>
+              <span class="text-on-surface font-bold text-sm block">{{ episode.host|default:"The SafePlace by K" }}</span>
+              <span class="text-on-surface-variant text-xs">{{ episode.created_at|date:"d M Y" }}</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <!-- Bouton Partager -->
+            <div style="position:relative">
+              <button class="js-share-toggle w-9 h-9 rounded-full bg-surface-container flex items-center justify-center hover:bg-surface-container-high transition-colors"
+                      data-url="{% url 'podcast_detail' episode.pk %}"
+                      data-title="{{ episode.title }}"
+                      aria-label="Partager">
+                <span class="material-symbols-outlined text-primary" style="font-size:18px">share</span>
+              </button>
+              <div class="share-panel" id="share-panel-{{ episode.pk }}">
+                <p class="text-xs text-on-surface-variant font-bold mb-2 px-2">Partager</p>
+                <button class="share-btn-item js-copy-link" data-url="http://127.0.0.1:8000{% url 'podcast_detail' episode.pk %}">
+                  <span class="material-symbols-outlined" style="font-size:18px;color:#416900">link</span> Copier le lien
+                </button>
+                <a class="share-btn-item" href="https://wa.me/?text={{ episode.title|urlencode }}%20http://127.0.0.1:8000{% url 'podcast_detail' episode.pk %}" target="_blank" rel="noopener">
+                  <span class="material-symbols-outlined" style="font-size:18px;color:#25D366">chat</span> WhatsApp
+                </a>
+                <a class="share-btn-item" href="mailto:?subject={{ episode.title|urlencode }}&body=Regardez%20cette%20vid%C3%A9o%20:%20http://127.0.0.1:8000{% url 'podcast_detail' episode.pk %}">
+                  <span class="material-symbols-outlined" style="font-size:18px;color:#ea4335">mail</span> Email
+                </a>
+                {% if episode.video_url %}
+                <a class="share-btn-item" href="{{ episode.video_url }}" target="_blank" rel="noopener">
+                  <span class="material-symbols-outlined" style="font-size:18px;color:#00261b">open_in_new</span> Ouvrir source
+                </a>
+                {% endif %}
+              </div>
+            </div>
+            <!-- Lien détail -->
+            <a href="{% url 'podcast_detail' episode.pk %}" class="flex items-center gap-1 text-secondary font-bold text-sm hover:underline">
+              Voir <span class="material-symbols-outlined text-[15px]">arrow_forward</span>
+            </a>
+          </div>
+        </div>
       </div>
     </div>
     {% endfor %}
   </div>
+
   {% else %}
   <div class="text-center py-24">
     <div class="w-24 h-24 rounded-full bg-surface-container mx-auto mb-6 flex items-center justify-center">
       <span class="material-symbols-outlined text-6xl text-primary">smart_display</span>
     </div>
-    <h2 class="font-headline-lg text-primary mb-3">Vidéos à venir</h2>
-    <p class="text-on-surface-variant mb-6 max-w-md mx-auto">Publiez une vidéo depuis le studio (compte administrateur) en collant une URL YouTube, ou revenez bientôt.</p>
-    <a href="{% url 'subscriptions' %}" class="bg-secondary-container text-on-secondary-container font-bold px-6 py-3 rounded-full hover:shadow-lg transition-all">Être notifié</a>
+    <h2 class="text-primary text-2xl font-bold mb-3">Vidéos à venir</h2>
+    <p class="text-on-surface-variant mb-6 max-w-md mx-auto">Publiez une vidéo depuis le studio en collant une URL YouTube ou un lien direct.</p>
+    <a href="{% url 'subscriptions' %}" class="bg-secondary-container text-on-secondary-container font-bold px-6 py-3 rounded-full hover:shadow-lg transition-all inline-block">Être notifié</a>
   </div>
   {% endif %}
 </main>
+
+<!-- ════ Modal Player Vidéo ════ -->
+<div class="vid-modal-overlay" id="vid-modal" role="dialog" aria-modal="true" aria-label="Lecteur vidéo">
+  <div class="vid-modal-box">
+    <div class="vid-modal-header">
+      <span class="vid-modal-title" id="vid-modal-title">Vidéo</span>
+      <div class="flex gap-2 items-center">
+        <a id="vid-modal-ext-link" href="#" target="_blank" rel="noopener"
+           class="flex items-center gap-1 text-xs text-white/60 hover:text-white font-bold px-3 py-1.5 rounded-full" style="background:rgba(255,255,255,0.08)">
+          <span class="material-symbols-outlined" style="font-size:15px">open_in_new</span> Ouvrir
+        </a>
+        <button class="vid-modal-close" onclick="closeVideoModal()" aria-label="Fermer">
+          <span class="material-symbols-outlined" style="font-size:20px">close</span>
+        </button>
+      </div>
+    </div>
+    <div class="vid-modal-player" id="vid-modal-player"></div>
+    <div class="vid-modal-footer">
+      <button class="js-modal-copy flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-colors"
+              style="background:rgba(255,255,255,0.1);color:#fff;border:none;cursor:pointer">
+        <span class="material-symbols-outlined" style="font-size:16px">link</span> Copier le lien
+      </button>
+      <a id="vid-modal-wa" href="#" target="_blank" rel="noopener"
+         class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold"
+         style="background:#25D366;color:#fff;text-decoration:none">
+        <span class="material-symbols-outlined" style="font-size:16px">chat</span> WhatsApp
+      </a>
+      <a id="vid-modal-email" href="#" class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold"
+         style="background:rgba(255,255,255,0.1);color:#fff;text-decoration:none">
+        <span class="material-symbols-outlined" style="font-size:16px">mail</span> Email
+      </a>
+      <a id="vid-modal-detail" href="#"
+         class="ml-auto flex items-center gap-1 text-sm font-bold"
+         style="color:#9ff700;text-decoration:none">
+        Page complète <span class="material-symbols-outlined" style="font-size:16px">arrow_forward</span>
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+var currentModalEpisodeUrl = '';
+
+function openVideoModal(thumb) {
+  var videoUrl = thumb.dataset.videoUrl;
+  var videoType = thumb.dataset.videoType;
+  var title = thumb.dataset.title;
+  var episodeUrl = thumb.dataset.episodeUrl;
+  currentModalEpisodeUrl = episodeUrl;
+
+  document.getElementById('vid-modal-title').textContent = title;
+  document.getElementById('vid-modal-ext-link').href = videoUrl || episodeUrl;
+  document.getElementById('vid-modal-detail').href = episodeUrl;
+  document.getElementById('vid-modal-wa').href = 'https://wa.me/?text=' + encodeURIComponent(title + ' ' + location.origin + episodeUrl);
+  document.getElementById('vid-modal-email').href = 'mailto:?subject=' + encodeURIComponent(title) + '&body=' + encodeURIComponent('Regardez cette vidéo : ' + location.origin + episodeUrl);
+
+  var player = document.getElementById('vid-modal-player');
+  if (videoType === 'youtube' && videoUrl) {
+    player.innerHTML = '<iframe src="' + videoUrl + '?autoplay=1&rel=0&modestbranding=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+  } else if (videoUrl) {
+    player.innerHTML = '<video controls autoplay preload="metadata" style="position:absolute;inset:0;width:100%;height:100%;background:#000;object-fit:contain"><source src="' + videoUrl + '" type="video/mp4"><source src="' + videoUrl + '" type="video/webm"></video>';
+  } else {
+    player.innerHTML = '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.4);font-size:14px">Aucune source vidéo disponible</div>';
+  }
+
+  document.getElementById('vid-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeVideoModal() {
+  document.getElementById('vid-modal').classList.remove('open');
+  document.getElementById('vid-modal-player').innerHTML = '';
+  document.body.style.overflow = '';
+}
+
+// Fermer sur clic overlay
+document.getElementById('vid-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeVideoModal();
+});
+// Fermer sur Escape
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeVideoModal();
+});
+
+// Bouton copier lien dans modal
+document.querySelector('.js-modal-copy').addEventListener('click', function() {
+  navigator.clipboard.writeText(location.origin + currentModalEpisodeUrl).then(function() {
+    var btn = document.querySelector('.js-modal-copy');
+    var orig = btn.innerHTML;
+    btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px">check</span> Copié !';
+    setTimeout(function() { btn.innerHTML = orig; }, 2000);
+  });
+});
+
+// Panneaux partage dans les cartes
+document.querySelectorAll('.js-share-toggle').forEach(function(btn) {
+  btn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    var panelId = 'share-panel-' + btn.dataset.url.split('/').filter(Boolean).pop();
+    // Chercher le panel parent
+    var panel = btn.parentElement.querySelector('.share-panel');
+    var isOpen = panel.classList.contains('open');
+    document.querySelectorAll('.share-panel').forEach(function(p) { p.classList.remove('open'); });
+    if (!isOpen) panel.classList.add('open');
+  });
+});
+
+// Copier lien dans les panneaux
+document.querySelectorAll('.js-copy-link').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var url = btn.dataset.url;
+    navigator.clipboard.writeText(url).then(function() {
+      var orig = btn.innerHTML;
+      btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px;color:#416900">check</span> Lien copié !';
+      setTimeout(function() { btn.innerHTML = orig; }, 2000);
+    });
+    btn.closest('.share-panel').classList.remove('open');
+  });
+});
+
+// Fermer panels au clic ailleurs
+document.addEventListener('click', function() {
+  document.querySelectorAll('.share-panel').forEach(function(p) { p.classList.remove('open'); });
+});
+</script>
 {% endblock %}

@@ -453,6 +453,92 @@
     font-size: 12px;
     display: flex; align-items: center; justify-content: center;
   }
+
+/* ── Responsive Media Queries ── */
+@media (max-width: 768px) {
+  .hero-wrap {
+    min-height: 400px;
+    padding: 24px 16px;
+  }
+  
+  .hero-glow {
+    width: 300px;
+    height: 300px;
+    top: -75px;
+    right: -50px;
+  }
+  
+  .hero-glow-2 {
+    width: 200px;
+    height: 200px;
+    bottom: -50px;
+    left: -40px;
+  }
+  
+  .bento-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+  }
+  
+  .bento-card {
+    min-height: 180px;
+  }
+  
+  .ep-card {
+    padding: 16px;
+  }
+  
+  .vid-card {
+    padding: 16px;
+  }
+  
+  .sidebar-card {
+    padding: 20px;
+  }
+  
+  .cta-wrap {
+    padding: 40px 24px;
+  }
+  
+  .btn-lime, .btn-glass, .btn-outline {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-wrap {
+    min-height: 350px;
+    padding: 20px 12px;
+  }
+  
+  .hero-glow {
+    width: 200px;
+    height: 200px;
+  }
+  
+  .section-title {
+    font-size: 1.25rem;
+  }
+  
+  .ep-card, .vid-card {
+    padding: 12px;
+  }
+  
+  .play-fab {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .sidebar {
+    display: none;
+  }
+  
+  .main-content {
+    width: 100%;
+    padding: 0 12px;
+  }
+}
 </style>
 
 <main class="max-w-[1320px] mx-auto px-4 md:px-8 py-8 flex gap-8">
@@ -783,7 +869,7 @@
       {% else %}
       <p class="text-sm" style="color:rgba(0,38,27,0.55)">
         Les vidéos seront bientôt disponibles.
-        <a href="{% url 'subscriptions' %}" class="font-bold underline" style="color:#416900">Inscrivez-vous</a> pour être averti.
+        <a href="{% url 'register' %}" class="font-bold underline" style="color:#416900">Inscrivez-vous</a> pour être averti.
       </p>
       {% endif %}
     </section>
@@ -811,7 +897,7 @@
           Abonnez-vous gratuitement et recevez nos épisodes, méditations et émissions en direct directement dans votre boîte mail.
         </p>
         <div class="flex flex-wrap gap-4 justify-center">
-          <a href="{% url 'subscriptions' %}" class="btn-lime">
+          <a href="{% url 'register' %}" class="btn-lime">
             <span class="material-symbols-outlined text-[18px]">notifications</span>S'abonner gratuitement
           </a>
           <a href="{% url 'about' %}" class="btn-glass">En savoir plus</a>
@@ -901,7 +987,7 @@
           </div>
           <h3 class="font-bold text-white text-base mb-2" style="font-family:'Poppins',sans-serif">Rejoindre la Communauté</h3>
           <p class="text-sm mb-5" style="color:rgba(255,255,255,0.5)">Abonnez-vous gratuitement pour ne manquer aucun épisode ni émission.</p>
-          <a href="{% url 'subscriptions' %}"
+          <a href="{% url 'register' %}"
              class="block w-full text-center py-3 rounded-full font-bold text-sm transition-all"
              style="background:#9ff700;color:#00261b;font-family:'Poppins',sans-serif">
             <span class="material-symbols-outlined text-sm mr-1" style="vertical-align:middle">notifications</span>

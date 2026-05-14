@@ -72,6 +72,152 @@ tailwind.config = {
   @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.2)} }
   .pulse-dot { animation: pulse 2s cubic-bezier(0.4,0,0.6,1) infinite; }
   body { -webkit-font-smoothing: antialiased; }
+
+  /* Mobile Navigation Menu */
+  .sp-nav__mobile {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: none;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+  }
+  .sp-nav__mobile.open {
+    display: flex;
+  }
+  .sp-nav__mobile-panel {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+    max-width: 320px;
+    background: #f9f9f7;
+    padding: 24px;
+    overflow-y: auto;
+    animation: slideIn 0.3s ease;
+  }
+  @keyframes slideIn {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+  }
+  .sp-nav__mobile-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border-radius: 12px;
+    color: #1a1c1b;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s;
+    margin-bottom: 8px;
+  }
+  .sp-nav__mobile-link:hover {
+    background: rgba(65,105,0,0.1);
+    color: #416900;
+  }
+  .sp-nav__mobile-link--active {
+    background: rgba(65,105,0,0.15);
+    color: #416900;
+    font-weight: 600;
+  }
+
+  /* Responsive Navigation Adjustments */
+  @media (max-width: 1024px) {
+    .glass-player {
+      padding: 12px 16px;
+    }
+    .glass-player .flex.items-center.gap-4 {
+      gap: 8px;
+    }
+    .glass-player > div:first-child {
+      width: auto;
+    }
+    .glass-player > div:nth-child(2) {
+      width: 100%;
+      max-width: none;
+    }
+    .glass-player > div:last-child {
+      display: none;
+    }
+    .glass-player #volume-bar {
+      display: none;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .glass-player {
+      padding: 10px 12px;
+    }
+    .glass-player .flex.items-center.gap-6 {
+      gap: 12px;
+    }
+    .glass-player .text-label-sm {
+      font-size: 11px;
+    }
+    .glass-player .w-12.h-12 {
+      width: 40px;
+      height: 40px;
+    }
+    .glass-player .w-12.h-12.rounded-full {
+      width: 36px;
+      height: 36px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .glass-player {
+      padding: 8px 10px;
+    }
+    .glass-player .flex.items-center.gap-6 {
+      gap: 8px;
+    }
+    .glass-player .material-symbols-outlined {
+      font-size: 20px;
+    }
+    .glass-player .text-label-sm {
+      display: none;
+    }
+  }
+
+  /* Mobile mini-player (au-dessus de la bottom nav) */
+  #sp-mobile-player {
+    display: none;
+    position: fixed;
+    bottom: 56px;
+    left: 0;
+    right: 0;
+    z-index: 45;
+    background: rgba(255,255,255,0.97);
+    backdrop-filter: blur(16px);
+    border-top: 1px solid rgba(0,38,27,0.1);
+    padding: 10px 16px;
+    box-shadow: 0 -4px 20px rgba(11,61,46,0.12);
+    align-items: center;
+    gap: 12px;
+  }
+  #sp-mobile-player.sp-player-visible {
+    display: flex;
+  }
+  @media (min-width: 1024px) {
+    #sp-mobile-player { display: none !important; }
+  }
+  #sp-mobile-progress {
+    height: 3px;
+    background: rgba(0,38,27,0.1);
+    border-radius: 99px;
+    flex: 1;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  #sp-mobile-progress-fill {
+    height: 100%;
+    background: #9ff700;
+    border-radius: 99px;
+    width: 0%;
+    transition: width 0.1s linear;
+  }
 </style>
 {% block extra_css %}{% endblock %}
 {% block head_extra %}{% endblock %}
@@ -100,7 +246,7 @@ tailwind.config = {
         <span class="material-symbols-outlined text-on-surface-variant text-[20px]">search</span>
         <input class="bg-transparent border-none focus:ring-0 w-44 ml-2 outline-none text-sm" placeholder="Rechercher..." type="text"/>
       </div>
-      <a href="{% url 'subscriptions' %}" class="bg-secondary-container text-on-secondary-container font-bold px-4 py-2 rounded-full hover:shadow-lg active:scale-95 transition-all text-label-md">Faire un don</a>
+      <a href="{% url 'register' %}" class="bg-secondary-container text-on-secondary-container font-bold px-4 py-2 rounded-full hover:shadow-lg active:scale-95 transition-all text-label-md">S'inscrire</a>
       <!-- Mobile nav toggle -->
       <button id="sp-nav-toggle" class="md:hidden flex items-center justify-center w-10 h-10 rounded-full bg-surface-container border border-outline-variant hover:bg-surface-container-high transition-colors">
         <span class="material-symbols-outlined text-primary">menu</span>
@@ -134,6 +280,9 @@ tailwind.config = {
     </a>
     <a href="{% url 'about' %}" class="sp-nav__mobile-link {% if request.resolver_match.url_name == 'about' %}sp-nav__mobile-link--active{% endif %}">
       <span class="material-symbols-outlined">church</span>À Propos
+    </a>
+    <a href="{% url 'register' %}" class="sp-nav__mobile-link" style="background:linear-gradient(135deg,rgba(159,247,0,0.15),rgba(65,105,0,0.1));border:1px solid rgba(159,247,0,0.2)">
+      <span class="material-symbols-outlined" style="color:#416900">favorite</span><span style="color:#00261b;font-weight:700">S'inscrire gratuitement</span>
     </a>
     <a href="{% url 'subscriptions' %}" class="sp-nav__mobile-link">
       <span class="material-symbols-outlined">volunteer_activism</span>Dons & Abonnements
@@ -202,10 +351,78 @@ tailwind.config = {
   </a>
 </nav>
 
+<!-- Mini-player Mobile (au-dessus de la bottom nav) -->
+<div id="sp-mobile-player" role="region" aria-label="Lecteur audio">
+  <!-- Cover miniature -->
+  <div id="sp-mob-cover"
+       style="width:40px;height:40px;border-radius:10px;flex-shrink:0;background:linear-gradient(135deg,#00261b,#416900);display:flex;align-items:center;justify-content:center">
+    <span class="material-symbols-outlined text-white" style="font-size:18px">church</span>
+  </div>
+  <!-- Titre + barre progression -->
+  <div style="flex:1;min-width:0">
+    <p id="sp-mob-title" style="font-size:13px;font-weight:700;color:#00261b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">The SafePlace by K</p>
+    <div id="sp-mobile-progress" style="margin-top:4px">
+      <div id="sp-mobile-progress-fill"></div>
+    </div>
+  </div>
+  <!-- Play/Pause -->
+  <button id="sp-mob-play-btn"
+          style="width:40px;height:40px;border-radius:50%;background:#00261b;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform 0.2s"
+          aria-label="Lecture / Pause">
+    <span id="sp-mob-play-icon" class="material-symbols-outlined text-white" style="font-size:22px;font-variation-settings:'FILL' 1">play_arrow</span>
+  </button>
+  <!-- Fermer -->
+  <button id="sp-mob-close-btn"
+          style="width:32px;height:32px;border-radius:50%;background:rgba(0,38,27,0.08);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0"
+          aria-label="Fermer le player">
+    <span class="material-symbols-outlined" style="font-size:18px;color:#00261b">close</span>
+  </button>
+</div>
+
 <audio id="sp-audio" preload="none"></audio>
 <script src="{% static 'js/main.js' %}"></script>
 <script src="{% static 'js/player.js' %}"></script>
 <script src="{% static 'js/3d-effects.js' %}"></script>
+<script>
+// Mobile Navigation Toggle
+(function() {
+  const navToggle = document.getElementById('sp-nav-toggle');
+  const mobileMenu = document.getElementById('sp-mobile-menu');
+  const mobileClose = document.getElementById('sp-mobile-close');
+  
+  if (navToggle && mobileMenu) {
+    navToggle.addEventListener('click', function() {
+      mobileMenu.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    });
+  }
+  
+  if (mobileClose && mobileMenu) {
+    mobileClose.addEventListener('click', function() {
+      mobileMenu.classList.remove('open');
+      document.body.style.overflow = '';
+    });
+  }
+  
+  // Close menu when clicking outside
+  if (mobileMenu) {
+    mobileMenu.addEventListener('click', function(e) {
+      if (e.target === mobileMenu) {
+        mobileMenu.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+    });
+  }
+  
+  // Close menu on escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && mobileMenu && mobileMenu.classList.contains('open')) {
+      mobileMenu.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+  });
+})();
+</script>
 {% block extra_js %}{% endblock %}
 </body>
 </html>

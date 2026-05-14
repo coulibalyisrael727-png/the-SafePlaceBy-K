@@ -1,219 +1,283 @@
 {% extends 'dashboard/base.html' %}
-
-{% block title %}Tableau de Bord — The SafePlace{% endblock %}
+{% block title %}Creator Studio — The SafePlace{% endblock %}
 {% block page_title %}Tableau de Bord{% endblock %}
 {% block page_subtitle %}Vue d'ensemble de votre plateforme{% endblock %}
 
 {% block topbar_actions %}
 <a href="{% url 'episode_publishing' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary to-primary-container text-white font-bold rounded-full text-sm hover:shadow-lg active:scale-95 transition-all">
-    <span class="material-symbols-outlined text-base">add</span>
-    Publier
+    <span class="material-symbols-outlined text-base">add</span>Publier
 </a>
 {% endblock %}
 
 {% block content %}
-<div class="p-4 md:p-8 relative z-10">
-    <!-- Connection Status Banner -->
-    <div class="mb-6 animate-fade-in">
-        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium
-            {% if api_connected %}bg-green-50 text-green-800 border border-green-200
-            {% else %}bg-error-container text-on-error-container border border-red-200{% endif %}">
-            <span class="material-symbols-outlined text-lg">
-                {% if api_connected %}api{% else %}cloud_off{% endif %}
-            </span>
-            {% if api_connected %}
-                API Connectée (Site Principal)
-            {% else %}
-                Erreur API: {{ error_message|default:"Connexion impossible au site principal" }}
-            {% endif %}
-        </div>
+<style>
+  :root {
+    --sp-lime:#9ff700;--sp-lime-dark:#416900;--sp-forest:#00261b;
+    --sp-forest-mid:#0b3d2e;--sp-surface:#f4f6f0;--sp-surface-card:#ffffff;
+    --sp-surface-low:#eef0ea;--sp-text:#00261b;--sp-text-muted:#5a7060;
+    --sp-text-dim:#8fa894;--sp-border:rgba(0,38,27,0.1);
+    --sp-radius-sm:8px;--sp-radius-md:12px;--sp-radius-lg:16px;
+    --sp-shadow:0 4px 20px rgba(0,38,27,0.06);
+  }
+  .sp-stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+  @media(max-width:768px){.sp-stats-grid{grid-template-columns:1fr}}
+  .sp-stat-card{background:var(--sp-surface-card);border:1px solid var(--sp-border);border-radius:var(--sp-radius-lg);padding:20px 22px;position:relative;overflow:hidden;box-shadow:var(--sp-shadow)}
+  .sp-stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--sp-lime),var(--sp-lime-dark))}
+  .sp-stat-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+  .sp-stat-label{font-size:12px;color:var(--sp-text-muted);font-weight:500}
+  .sp-stat-icon{font-size:18px;color:var(--sp-lime-dark);background:rgba(159,247,0,0.11);border-radius:7px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Outlined'}
+  .sp-stat-number{font-size:34px;font-weight:800;color:var(--sp-forest);line-height:1;display:inline}
+  .sp-stat-growth{font-size:12px;font-weight:600;color:var(--sp-lime-dark);background:rgba(159,247,0,0.14);padding:2px 8px;border-radius:12px;margin-left:8px}
+  .sp-stat-bar-track{width:100%;height:4px;background:var(--sp-surface-low);border-radius:4px;margin-top:16px;overflow:hidden}
+  .sp-stat-bar-fill{height:100%;background:linear-gradient(90deg,var(--sp-lime),var(--sp-lime-dark));border-radius:4px;width:0;transition:width 1.2s cubic-bezier(.4,0,.2,1)}
+  .sp-grid-2{display:grid;grid-template-columns:1fr 320px;gap:16px;align-items:start}
+  @media(max-width:1024px){.sp-grid-2{grid-template-columns:1fr}}
+  .sp-left,.sp-right{display:flex;flex-direction:column;gap:16px}
+  .sp-card{background:var(--sp-surface-card);border:1px solid var(--sp-border);border-radius:var(--sp-radius-lg);padding:22px;box-shadow:var(--sp-shadow)}
+  .sp-card-title{font-size:15px;font-weight:700;color:var(--sp-forest);margin-bottom:18px;display:flex;align-items:center;justify-content:space-between}
+  .sp-card-link{font-size:12px;font-weight:600;color:var(--sp-lime-dark);text-decoration:none}
+  .sp-upload-zone{border:2px dashed rgba(159,247,0,0.32);border-radius:var(--sp-radius-md);padding:36px 24px;display:flex;flex-direction:column;align-items:center;text-align:center;background:rgba(159,247,0,0.03);cursor:pointer;text-decoration:none;color:inherit;transition:border-color 0.2s,background 0.2s}
+  .sp-upload-zone:hover{border-color:var(--sp-lime);background:rgba(159,247,0,0.06)}
+  .sp-upload-icon{width:58px;height:58px;border-radius:50%;background:rgba(159,247,0,0.12);display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+  .sp-upload-icon span{font-size:26px;color:var(--sp-lime-dark)}
+  .sp-upload-zone h4{font-size:14px;font-weight:700;color:var(--sp-forest);margin-bottom:6px}
+  .sp-upload-zone p{font-size:12px;color:var(--sp-text-muted);margin-bottom:18px}
+  .sp-btn-lime{background:var(--sp-lime);color:var(--sp-forest);font-size:13px;font-weight:700;padding:10px 26px;border-radius:24px;border:none;cursor:pointer;display:inline-block;text-decoration:none;transition:opacity 0.2s,transform 0.15s}
+  .sp-btn-lime:hover{opacity:.9;transform:scale(1.02)}
+  .sp-ep-list{display:flex;flex-direction:column;gap:8px}
+  .sp-ep-item{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:var(--sp-radius-sm);border:1px solid var(--sp-border);transition:background 0.15s}
+  .sp-ep-item:hover{background:var(--sp-surface-low)}
+  .sp-ep-thumb{width:60px;height:60px;border-radius:12px;background:linear-gradient(135deg,#0b3d2e,#416900);display:flex;align-items:center;justify-content:center;color:white;font-family:'Material Symbols Outlined';font-size:24px}
+  .sp-ep-info{flex:1;min-width:0}
+  .sp-ep-info h4{font-size:13px;font-weight:600;color:var(--sp-forest);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sp-ep-info p{font-size:11px;color:var(--sp-text-muted);margin-top:2px}
+  .sp-ep-actions{display:flex;gap:2px;flex-shrink:0}
+  .sp-action-btn{width:30px;height:30px;border-radius:6px;border:none;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--sp-text-muted);text-decoration:none;transition:background 0.15s,color 0.15s;font-family:'Material Symbols Outlined';font-size:17px}
+  .sp-action-btn:hover{background:var(--sp-surface-low);color:var(--sp-forest)}
+  .sp-empty{text-align:center;padding:40px 16px}
+  .sp-empty-icon{width:58px;height:58px;border-radius:50%;background:var(--sp-surface-low);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-family:'Material Symbols Outlined';font-size:28px;color:var(--sp-lime-dark)}
+  .sp-empty h4{font-size:14px;font-weight:700;color:var(--sp-forest);margin-bottom:6px}
+  .sp-empty p{font-size:12px;color:var(--sp-text-muted)}
+  .sp-tips-card{background:linear-gradient(140deg,var(--sp-forest) 0%,var(--sp-forest-mid) 100%);border-radius:var(--sp-radius-lg);padding:22px;position:relative;overflow:hidden}
+  .sp-tips-card h3{font-size:14px;font-weight:700;color:var(--sp-lime);margin-bottom:10px}
+  .sp-tips-card p{font-size:12px;color:rgba(255,255,255,0.6);line-height:1.6;margin-bottom:16px}
+  .sp-btn-glass{display:block;text-align:center;text-decoration:none;background:rgba(159,247,0,0.13);color:var(--sp-lime);font-size:12px;font-weight:700;padding:11px;border-radius:var(--sp-radius-sm);border:1px solid rgba(159,247,0,0.22);cursor:pointer;transition:background 0.2s}
+  .sp-btn-glass:hover{background:rgba(159,247,0,0.2)}
+  .sp-chart-bars{display:flex;align-items:flex-end;gap:6px;height:110px;padding-bottom:4px;border-bottom:1px solid var(--sp-border);margin-bottom:8px}
+  .sp-bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px}
+  .sp-bar{width:100%;border-radius:4px 4px 0 0;background:rgba(159,247,0,0.18);transition:height 0.9s cubic-bezier(.4,0,.2,1)}
+  .sp-bar.sp-bar-hi{background:var(--sp-lime)}
+  .sp-bar-label{font-size:10px;color:var(--sp-text-dim);font-weight:500}
+  .sp-geo-item{margin-bottom:12px}
+  .sp-geo-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+  .sp-geo-name{font-size:13px;color:var(--sp-forest)}
+  .sp-geo-pct{font-size:12px;font-weight:700;color:var(--sp-lime-dark)}
+  .sp-geo-track{width:100%;height:5px;background:var(--sp-surface-low);border-radius:4px;overflow:hidden}
+  .sp-geo-fill{height:100%;background:linear-gradient(90deg,var(--sp-lime),var(--sp-lime-dark));border-radius:4px;width:0;transition:width 1.1s cubic-bezier(.4,0,.2,1)}
+  .api-status-bar{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:24px;font-size:13px;font-weight:500;margin-bottom:20px}
+  .api-ok{background:#f0fdf4;color:#166534;border:1px solid #bbf7d0}
+  .api-err{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
+</style>
+
+<div class="p-4 md:p-8">
+
+  <!-- API Status -->
+  <div class="api-status-bar {% if api_connected %}api-ok{% else %}api-err{% endif %}">
+    <span class="material-symbols-outlined text-lg">{% if api_connected %}api{% else %}cloud_off{% endif %}</span>
+    {% if api_connected %}API Principale connectée (port 8000){% else %}⚠ {{ error_message|default:"Impossible de joindre le site principal" }}{% endif %}
+  </div>
+
+  <!-- Stats Grid -->
+  <section class="sp-stats-grid">
+    <div class="sp-stat-card">
+      <div class="sp-stat-header">
+        <span class="sp-stat-label">Total Abonnés</span>
+        <span class="sp-stat-icon">group</span>
+      </div>
+      <span class="sp-stat-number" id="sp-count-1" data-target="{{ stats.total_subscribers|default:0 }}">0</span>
+      <span class="sp-stat-growth">actifs</span>
+      <div class="sp-stat-bar-track"><div class="sp-stat-bar-fill" data-w="75"></div></div>
     </div>
-
-    <!-- Stats Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
-        <!-- Episodes -->
-        <div class="bg-surface/80 backdrop-blur-xl border border-outline-variant/50 rounded-2xl p-6 shadow-sm hover:-translate-y-1 hover:shadow-lg transition-all animate-fade-in-up" style="animation-delay: 0.1s;">
-            <div class="flex items-center gap-4 mb-4">
-                <div class="w-12 h-12 rounded-xl bg-lime/20 flex items-center justify-center">
-                    <span class="material-symbols-outlined text-lime-dark" style="font-variation-settings:'FILL' 1">podcasts</span>
-                </div>
-            </div>
-            <p class="text-sm font-medium text-on-surface-variant mb-1">Total Épisodes</p>
-            <p class="text-3xl font-bold text-primary font-heading">{{ stats.total_episodes|default:"0" }}</p>
-            <p class="text-xs text-on-surface-variant mt-2 flex items-center gap-1">
-                <span class="material-symbols-outlined text-sm {% if recent_stats.new_episodes > 0 %}text-green-600{% endif %}">trending_up</span>
-                +{{ recent_stats.new_episodes|default:"0" }} ce mois
-            </p>
-        </div>
-
-        <!-- Donations -->
-        <div class="bg-surface/80 backdrop-blur-xl border border-outline-variant/50 rounded-2xl p-6 shadow-sm hover:-translate-y-1 hover:shadow-lg transition-all animate-fade-in-up" style="animation-delay: 0.2s;">
-            <div class="flex items-center gap-4 mb-4">
-                <div class="w-12 h-12 rounded-xl bg-primary-fixed flex items-center justify-center">
-                    <span class="material-symbols-outlined text-primary" style="font-variation-settings:'FILL' 1">volunteer_activism</span>
-                </div>
-            </div>
-            <p class="text-sm font-medium text-on-surface-variant mb-1">Total Dons (Complétés)</p>
-            <p class="text-3xl font-bold text-primary font-heading">€{{ stats.total_donations|default:"0" }}</p>
-            <p class="text-xs text-on-surface-variant mt-2 flex items-center gap-1">
-                <span class="material-symbols-outlined text-sm {% if recent_stats.recent_donations_amount > 0 %}text-green-600{% endif %}">trending_up</span>
-                +€{{ recent_stats.recent_donations_amount|default:"0" }} ce mois
-            </p>
-        </div>
-
-        <!-- Messages -->
-        <div class="bg-surface/80 backdrop-blur-xl border border-outline-variant/50 rounded-2xl p-6 shadow-sm hover:-translate-y-1 hover:shadow-lg transition-all animate-fade-in-up" style="animation-delay: 0.3s;">
-            <div class="flex items-center gap-4 mb-4">
-                <div class="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center">
-                    <span class="material-symbols-outlined text-orange-700" style="font-variation-settings:'FILL' 1">mail</span>
-                </div>
-            </div>
-            <p class="text-sm font-medium text-on-surface-variant mb-1">Messages</p>
-            <div class="flex items-end gap-3">
-                <p class="text-3xl font-bold text-primary font-heading">{{ stats.total_messages|default:"0" }}</p>
-                {% if stats.unread_messages > 0 %}
-                <span class="px-2.5 py-1 bg-error-container text-on-error-container text-xs font-bold rounded-full mb-1">
-                    {{ stats.unread_messages }} non lus
-                </span>
-                {% endif %}
-            </div>
-            <p class="text-xs text-on-surface-variant mt-2 flex items-center gap-1">
-                Voir la boîte de réception
-            </p>
-        </div>
-
-        <!-- Subscribers -->
-        <div class="bg-surface/80 backdrop-blur-xl border border-outline-variant/50 rounded-2xl p-6 shadow-sm hover:-translate-y-1 hover:shadow-lg transition-all animate-fade-in-up" style="animation-delay: 0.4s;">
-            <div class="flex items-center gap-4 mb-4">
-                <div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
-                    <span class="material-symbols-outlined text-blue-700" style="font-variation-settings:'FILL' 1">group</span>
-                </div>
-            </div>
-            <p class="text-sm font-medium text-on-surface-variant mb-1">Abonnés (Actifs)</p>
-            <p class="text-3xl font-bold text-primary font-heading">{{ stats.total_subscribers|default:"0" }}</p>
-            <p class="text-xs text-on-surface-variant mt-2 flex items-center gap-1">
-                Inscrits aux notifications
-            </p>
-        </div>
+    <div class="sp-stat-card">
+      <div class="sp-stat-header">
+        <span class="sp-stat-label">Total Épisodes</span>
+        <span class="sp-stat-icon">podcasts</span>
+      </div>
+      <span class="sp-stat-number" id="sp-count-2" data-target="{{ stats.total_episodes|default:0 }}">0</span>
+      <span class="sp-stat-growth">+{{ recent_stats.new_episodes|default:0 }} ce mois</span>
+      <div class="sp-stat-bar-track"><div class="sp-stat-bar-fill" data-w="50"></div></div>
     </div>
-
-    <!-- Lists -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
-        
-        <!-- Recent Episodes -->
-        <div class="bg-surface/80 backdrop-blur-xl border border-outline-variant/50 rounded-2xl overflow-hidden animate-fade-in-up" style="animation-delay: 0.5s;">
-            <div class="px-6 py-4 border-b border-outline-variant/50 flex justify-between items-center bg-surface-container-low">
-                <h2 class="font-heading font-bold text-primary text-lg">Derniers Épisodes</h2>
-            </div>
-            <div class="divide-y divide-outline-variant/30">
-                {% for ep in recent_data.recent_episodes %}
-                <div class="p-6 hover:bg-surface-container-low/50 transition-colors">
-                    <div class="flex items-start gap-4">
-                        <div class="w-12 h-12 rounded-xl bg-primary-container/10 flex items-center justify-center shrink-0">
-                            <span class="material-symbols-outlined text-primary">
-                                {% if ep.episode_type == 'video' %}movie{% else %}podcasts{% endif %}
-                            </span>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-center justify-between gap-2 mb-1">
-                                <h3 class="font-bold text-on-surface truncate">{{ ep.title }}</h3>
-                                <span class="px-2.5 py-1 text-[10px] font-bold uppercase rounded-full shrink-0
-                                    {% if ep.status == 'published' %}bg-green-100 text-green-800{% else %}bg-gray-200 text-gray-700{% endif %}">
-                                    {{ ep.status }}
-                                </span>
-                            </div>
-                            <p class="text-sm text-on-surface-variant mb-2">{{ ep.description|truncatechars:80 }}</p>
-                            <div class="flex items-center gap-4 text-xs font-medium text-outline">
-                                <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">calendar_today</span> {{ ep.created_at }}</span>
-                                <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">visibility</span> {{ ep.views }} vues</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {% empty %}
-                <div class="p-8 text-center text-on-surface-variant">
-                    <p>Aucun épisode récent</p>
-                </div>
-                {% endfor %}
-            </div>
-            <div class="px-6 py-3 border-t border-outline-variant/50 bg-surface-container-lowest text-center">
-                <a href="{% url 'episode_publishing' %}" class="text-sm font-bold text-primary hover:text-lime-dark transition-colors inline-flex items-center gap-1">
-                    Gérer le contenu <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
-                </a>
-            </div>
-        </div>
-
-        <!-- Recent Activity (Donations & Messages) -->
-        <div class="space-y-6 lg:space-y-8 animate-fade-in-up" style="animation-delay: 0.6s;">
-            
-            <!-- Recent Donations -->
-            <div class="bg-surface/80 backdrop-blur-xl border border-outline-variant/50 rounded-2xl overflow-hidden">
-                <div class="px-6 py-4 border-b border-outline-variant/50 flex justify-between items-center bg-surface-container-low">
-                    <h2 class="font-heading font-bold text-primary text-lg">Derniers Dons</h2>
-                </div>
-                <div class="divide-y divide-outline-variant/30">
-                    {% for don in recent_data.recent_donations %}
-                    <div class="p-4 flex items-center gap-4 hover:bg-surface-container-low/50 transition-colors">
-                        <div class="w-10 h-10 rounded-full bg-lime/20 flex items-center justify-center text-lime-dark font-bold text-sm shrink-0">
-                            {{ don.name|first|upper }}
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <p class="font-bold text-on-surface truncate">{{ don.name }}</p>
-                            <p class="text-xs text-on-surface-variant truncate">{{ don.email }}</p>
-                        </div>
-                        <div class="text-right">
-                            <p class="font-bold text-primary">€{{ don.amount }}</p>
-                            <p class="text-xs text-on-surface-variant">{{ don.created_at }}</p>
-                        </div>
-                    </div>
-                    {% empty %}
-                    <div class="p-6 text-center text-on-surface-variant">
-                        <p>Aucun don récent</p>
-                    </div>
-                    {% endfor %}
-                </div>
-                <div class="px-6 py-3 border-t border-outline-variant/50 bg-surface-container-lowest text-center">
-                    <a href="{% url 'donation_management' %}" class="text-sm font-bold text-primary hover:text-lime-dark transition-colors inline-flex items-center gap-1">
-                        Tous les dons <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
-                    </a>
-                </div>
-            </div>
-
-            <!-- Recent Messages -->
-            <div class="bg-surface/80 backdrop-blur-xl border border-outline-variant/50 rounded-2xl overflow-hidden">
-                <div class="px-6 py-4 border-b border-outline-variant/50 flex justify-between items-center bg-surface-container-low">
-                    <h2 class="font-heading font-bold text-primary text-lg">Derniers Messages</h2>
-                </div>
-                <div class="divide-y divide-outline-variant/30">
-                    {% for msg in recent_data.recent_messages %}
-                    <div class="p-4 flex items-center gap-4 hover:bg-surface-container-low/50 transition-colors {% if not msg.read %}bg-primary/5{% endif %}">
-                        <div class="w-10 h-10 rounded-full {% if not msg.read %}bg-primary text-white{% else %}bg-surface-container text-on-surface-variant{% endif %} flex items-center justify-center font-bold text-sm shrink-0">
-                            {{ msg.name|first|upper }}
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-center gap-2 mb-0.5">
-                                <p class="font-bold text-on-surface truncate">{{ msg.subject }}</p>
-                                {% if not msg.read %}
-                                <span class="w-2 h-2 rounded-full bg-error shrink-0"></span>
-                                {% endif %}
-                            </div>
-                            <p class="text-xs text-on-surface-variant truncate">{{ msg.name }} — {{ msg.created_at }}</p>
-                        </div>
-                    </div>
-                    {% empty %}
-                    <div class="p-6 text-center text-on-surface-variant">
-                        <p>Aucun message récent</p>
-                    </div>
-                    {% endfor %}
-                </div>
-                <div class="px-6 py-3 border-t border-outline-variant/50 bg-surface-container-lowest text-center">
-                    <a href="{% url 'message_management' %}" class="text-sm font-bold text-primary hover:text-lime-dark transition-colors inline-flex items-center gap-1">
-                        Tous les messages <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
-                    </a>
-                </div>
-            </div>
-            
-        </div>
+    <div class="sp-stat-card">
+      <div class="sp-stat-header">
+        <span class="sp-stat-label">Dons reçus</span>
+        <span class="sp-stat-icon">payments</span>
+      </div>
+      <span class="sp-stat-number" id="sp-count-3" data-target="{{ stats.total_donations|default:0 }}" data-prefix="€">€0</span>
+      <span class="sp-stat-growth">+€{{ recent_stats.recent_donations_amount|default:0 }} ce mois</span>
+      <div class="sp-stat-bar-track"><div class="sp-stat-bar-fill" data-w="65"></div></div>
     </div>
+  </section>
+
+  <!-- Two-column layout -->
+  <div class="sp-grid-2">
+    <div class="sp-left">
+
+      <!-- Upload zone -->
+      <div class="sp-card">
+        <div class="sp-card-title">Publier un Nouvel Épisode</div>
+        <a href="{% url 'episode_publishing' %}" class="sp-upload-zone">
+          <div class="sp-upload-icon"><span class="material-symbols-outlined">cloud_upload</span></div>
+          <h4>Ajouter un podcast ou une vidéo</h4>
+          <p>Collez une URL audio ou une URL YouTube.</p>
+          <span class="sp-btn-lime">Publier du contenu</span>
+        </a>
+      </div>
+
+      <!-- Recent Episodes -->
+      <div class="sp-card">
+        <div class="sp-card-title">
+          Épisodes Récents
+          <a href="{% url 'episode_publishing' %}" class="sp-card-link">Gérer tout →</a>
+        </div>
+        <div class="sp-ep-list">
+          {% for ep in recent_data.recent_episodes %}
+          <div class="sp-ep-item">
+            <div class="sp-ep-thumb">{% if ep.episode_type == 'video' %}movie{% else %}podcasts{% endif %}</div>
+            <div class="sp-ep-info">
+              <h4>{{ ep.title }}</h4>
+              <p>{{ ep.created_at }} · {{ ep.views }} vue{{ ep.views|pluralize }} · <span class="{% if ep.status == 'published' %}text-green-600{% else %}text-gray-400{% endif %}">{{ ep.status }}</span></p>
+            </div>
+            <div class="sp-ep-actions">
+              <span class="sp-action-btn" title="Voir">open_in_new</span>
+            </div>
+          </div>
+          {% empty %}
+          <div class="sp-empty">
+            <div class="sp-empty-icon">podcasts</div>
+            <h4>Aucun épisode pour l'instant</h4>
+            <p>Publiez votre premier épisode depuis le bouton ci-dessus.</p>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Recent Donations -->
+      <div class="sp-card">
+        <div class="sp-card-title">
+          Derniers Dons
+          <a href="{% url 'donation_management' %}" class="sp-card-link">Voir tout →</a>
+        </div>
+        <div class="sp-ep-list">
+          {% for don in recent_data.recent_donations %}
+          <div class="sp-ep-item">
+            <div class="sp-ep-thumb" style="background:linear-gradient(135deg,#0b3d2e,#416900);font-family:inherit;font-size:18px;font-weight:700">{{ don.name|first|upper }}</div>
+            <div class="sp-ep-info">
+              <h4>{{ don.name }}</h4>
+              <p>{{ don.email }} · {{ don.created_at }}</p>
+            </div>
+            <span style="font-weight:800;color:var(--sp-forest)">€{{ don.amount }}</span>
+          </div>
+          {% empty %}
+          <div class="sp-empty">
+            <div class="sp-empty-icon">volunteer_activism</div>
+            <h4>Aucun don reçu</h4>
+            <p>Les dons apparaîtront ici dès réception.</p>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+    </div><!-- /sp-left -->
+
+    <div class="sp-right">
+
+      <!-- Messages non lus -->
+      <div class="sp-card">
+        <div class="sp-card-title">
+          Messages
+          <a href="{% url 'message_management' %}" class="sp-card-link">Voir tout →</a>
+        </div>
+        {% if stats.unread_messages %}
+        <div style="display:flex;align-items:center;gap:10px;padding:12px;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;margin-bottom:12px">
+          <span class="material-symbols-outlined" style="color:#dc2626">mark_email_unread</span>
+          <span style="font-size:13px;font-weight:600;color:#991b1b">{{ stats.unread_messages }} message{{ stats.unread_messages|pluralize }} non lu{{ stats.unread_messages|pluralize }}</span>
+        </div>
+        {% endif %}
+        {% for msg in recent_data.recent_messages %}
+        <div class="sp-ep-item" style="margin-bottom:6px">
+          <div class="sp-ep-thumb" style="width:40px;height:40px;font-family:inherit;font-size:15px;font-weight:700;{% if not msg.read %}background:linear-gradient(135deg,#dc2626,#991b1b){% else %}background:linear-gradient(135deg,#0b3d2e,#416900){% endif %}">{{ msg.name|first|upper }}</div>
+          <div class="sp-ep-info">
+            <h4>{{ msg.subject }}</h4>
+            <p>{{ msg.name }} · {{ msg.created_at }}</p>
+          </div>
+        </div>
+        {% empty %}
+        <p style="font-size:13px;color:var(--sp-text-muted);text-align:center;padding:20px 0">Aucun message</p>
+        {% endfor %}
+      </div>
+
+      <!-- Conseils créateur -->
+      <div class="sp-tips-card">
+        <h3>Conseils Créateur</h3>
+        <p>Publiez régulièrement : un lien audio (MP3) pour les podcasts, ou une URL YouTube pour les vidéos. Tout se gère depuis « Publier un épisode ».</p>
+        <a href="{% url 'live_management' %}" class="sp-btn-glass">Planifier un Live</a>
+      </div>
+
+      <!-- Rétention -->
+      <div class="sp-card">
+        <div class="sp-card-title">Rétention Audience</div>
+        <div class="sp-chart-bars" id="sp-bars">
+          <div class="sp-bar-col"><div class="sp-bar" style="height:0" data-h="66"></div><span class="sp-bar-label">Lun</span></div>
+          <div class="sp-bar-col"><div class="sp-bar" style="height:0" data-h="50"></div><span class="sp-bar-label">Mar</span></div>
+          <div class="sp-bar-col"><div class="sp-bar sp-bar-hi" style="height:0" data-h="94"></div><span class="sp-bar-label">Mer</span></div>
+          <div class="sp-bar-col"><div class="sp-bar" style="height:0" data-h="33"></div><span class="sp-bar-label">Jeu</span></div>
+          <div class="sp-bar-col"><div class="sp-bar" style="height:0" data-h="61"></div><span class="sp-bar-label">Ven</span></div>
+          <div class="sp-bar-col"><div class="sp-bar" style="height:0" data-h="77"></div><span class="sp-bar-label">Sam</span></div>
+        </div>
+      </div>
+
+      <!-- Origine auditeurs -->
+      <div class="sp-card">
+        <div class="sp-card-title">Origine des Auditeurs</div>
+        <div class="sp-geo-item"><div class="sp-geo-header"><span class="sp-geo-name">🇫🇷 France</span><span class="sp-geo-pct">42%</span></div><div class="sp-geo-track"><div class="sp-geo-fill" data-w="42"></div></div></div>
+        <div class="sp-geo-item"><div class="sp-geo-header"><span class="sp-geo-name">🇨🇮 Côte d'Ivoire</span><span class="sp-geo-pct">28%</span></div><div class="sp-geo-track"><div class="sp-geo-fill" data-w="28"></div></div></div>
+        <div class="sp-geo-item"><div class="sp-geo-header"><span class="sp-geo-name">🇨🇲 Cameroun</span><span class="sp-geo-pct">18%</span></div><div class="sp-geo-track"><div class="sp-geo-fill" data-w="18"></div></div></div>
+        <div class="sp-geo-item"><div class="sp-geo-header"><span class="sp-geo-name">🇧🇪 Belgique</span><span class="sp-geo-pct">8%</span></div><div class="sp-geo-track"><div class="sp-geo-fill" data-w="8"></div></div></div>
+      </div>
+
+    </div><!-- /sp-right -->
+  </div><!-- /sp-grid-2 -->
 </div>
+
+{% block extra_js %}
+<script>
+(function(){
+  function animateCount(el,target,prefix,suffix,dur){
+    var start=0,step=target/(dur/16);
+    var t=setInterval(function(){
+      start=Math.min(start+step,target);
+      el.textContent=(prefix||'')+Math.round(start).toLocaleString('fr-FR')+(suffix||'');
+      if(start>=target)clearInterval(t);
+    },16);
+  }
+  window.addEventListener('DOMContentLoaded',function(){
+    var c1=document.getElementById('sp-count-1');
+    var c2=document.getElementById('sp-count-2');
+    var c3=document.getElementById('sp-count-3');
+    if(c1)animateCount(c1,parseInt(c1.dataset.target)||0,'','',1200);
+    if(c2)animateCount(c2,parseInt(c2.dataset.target)||0,'','',1200);
+    if(c3)animateCount(c3,parseInt(c3.dataset.target)||0,'€','',1200);
+    document.querySelectorAll('.sp-stat-bar-fill[data-w]').forEach(function(el){
+      setTimeout(function(){el.style.width=el.getAttribute('data-w')+'%';},350);
+    });
+    document.querySelectorAll('#sp-bars .sp-bar[data-h]').forEach(function(el,i){
+      setTimeout(function(){el.style.height=el.getAttribute('data-h')+'px';},300+i*60);
+    });
+    document.querySelectorAll('.sp-geo-fill[data-w]').forEach(function(el,i){
+      setTimeout(function(){el.style.width=el.getAttribute('data-w')+'%';},400+i*80);
+    });
+  });
+})();
+</script>
+{% endblock %}
 {% endblock %}

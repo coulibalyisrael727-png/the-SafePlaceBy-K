@@ -119,13 +119,17 @@ def dashboard(request):
     total_views = sum(e.views_count for e in Episode.objects.all())
     total_donations = Donation.objects.filter(status='completed').count()
     total_revenue = sum(d.amount for d in Donation.objects.filter(status='completed'))
-    
+    total_subscribers = Subscription.objects.filter(is_active=True).count()
+    recent_subscribers = Subscription.objects.filter(is_active=True).order_by('-created_at')[:5]
+
     context = {
         'episodes': episodes,
         'total_episodes': total_episodes,
         'total_views': total_views,
         'total_donations': total_donations,
         'total_revenue': total_revenue,
+        'total_subscribers': total_subscribers,
+        'recent_subscribers': recent_subscribers,
     }
     return render(request, 'dashboard.html', context)
 
@@ -231,13 +235,6 @@ def manage_live_streams(request):
 
 
 def subscriptions(request):
-    """Voir les donations et abonnements"""
-    donations = Donation.objects.filter(status='completed')[:20]
-    context = {'donations': donations}
-    return render(request, 'subscriptions.html', context)
-
-
-def donate(request):
     """Page abonnement gratuit + dons (liens gratuits, virement, option Stripe)."""
     from django.conf import settings as dj_settings
 
@@ -271,6 +268,18 @@ def donate(request):
         'stripe_public_key': stripe_pub,
     }
     return render(request, 'donate.html', context)
+
+
+def register(request):
+    """Page d'inscription gratuite à la communauté SafePlace."""
+    subscriber_count = Subscription.objects.filter(is_active=True).count()
+    return render(request, 'register.html', {'subscriber_count': subscriber_count})
+
+
+def donate(request):
+    """Page d'inscription gratuite à la communauté SafePlace."""
+    subscriber_count = Subscription.objects.filter(is_active=True).count()
+    return render(request, 'subscriptions.html', {'subscriber_count': subscriber_count})
 
 
 @require_http_methods(["POST"])
@@ -601,3 +610,5 @@ def access_denied(request):
 
 def loading(request):
     return render(request, 'loading.html')
+
+

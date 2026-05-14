@@ -1,3 +1,4 @@
+import re
 from django.db import models
 
 
@@ -31,12 +32,50 @@ class Episode(models.Model):
     def __str__(self):
         return self.title
 
+    def get_youtube_embed_url(self):
+        """Retourne une URL youtube.com/embed/... pour iframe, ou chaîne vide."""
+        url = (self.video_url or '').strip()
+        if not url:
+            return ''
+        m = re.search(
+            r'(?:youtube\.com/watch\?v=|youtu\.be/|youtube\.com/embed/)([a-zA-Z0-9_-]{11})',
+            url,
+        )
+        if m:
+            return f'https://www.youtube.com/embed/{m.group(1)}?rel=0&modestbranding=1'
+        return ''
+
+    def get_video_embed_url(self):
+        """Retourne l'URL embed (YouTube ou directe) pour lire la vidéo."""
+        yt = self.get_youtube_embed_url()
+        if yt:
+            return yt
+        return (self.video_url or '').strip()
+
     class Meta:
         ordering = ['-created_at']
         verbose_name = "Épisode"
         verbose_name_plural = "Épisodes"
 
 
+
+class EpisodeLike(models.Model):
+    episode = models.ForeignKey('Episode', on_delete=models.CASCADE, related_name='likes')
+    session_key = models.CharField(max_length=40)  # pour anonyme
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('episode', 'session_key')
+
+
+class EpisodeComment(models.Model):
+    episode = models.ForeignKey('Episode', on_delete=models.CASCADE, related_name='comments')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    content = models.TextField(max_length=1000)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
 class LiveStream(models.Model):
     PLATFORM_CHOICES = [
         ('youtube', 'YouTube'),

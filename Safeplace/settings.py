@@ -12,17 +12,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 import os
-
-# Application principale URL pour le dashboard
-MAIN_SITE_URL = os.environ.get('MAIN_SITE_URL', 'http://127.0.0.1:8000')
-MAIN_API_URL = os.environ.get('MAIN_API_URL', 'http://127.0.0.1:8000/api/v1/')
-DASHBOARD_API_KEY = os.environ.get('DASHBOARD_API_KEY', 'safeplace_secret_dashboard_key_2026')
-
-# Configuration des dons
-DONATION_PAYPAL_URL = os.environ.get('DONATION_PAYPAL_URL', 'https://paypal.me/safeplacebyk')
-DONATION_KOFI_URL = os.environ.get('DONATION_KOFI_URL', 'https://ko-fi.com/safeplacebyk')
-DONATION_BANK_LABEL = os.environ.get('DONATION_BANK_LABEL', 'The SafePlace by K')
-DONATION_BANK_IBAN = os.environ.get('DONATION_BANK_IBAN', 'FR76 1234 5678 9101 1121 3141 516')
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -84,21 +74,17 @@ TEMPLATES = [
 WSGI_APPLICATION = 'Safeplace.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
-
-from decouple import config
-
-# Use PostgreSQL in production, SQLite in development
+# ── Base de données ────────────────────────────────────────────────────────────
+# PostgreSQL en production, SQLite en développement
 if os.getenv('POSTGRES_DB'):
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': config('POSTGRES_DB', default='safeplace_test'),
-            'USER': config('POSTGRES_USER', default='test'),
+            'NAME':     config('POSTGRES_DB',       default='safeplace_test'),
+            'USER':     config('POSTGRES_USER',     default='test'),
             'PASSWORD': config('POSTGRES_PASSWORD', default='test'),
-            'HOST': config('POSTGRES_HOST', default='localhost'),
-            'PORT': config('POSTGRES_PORT', default='5432'),
+            'HOST':     config('POSTGRES_HOST',     default='localhost'),
+            'PORT':     config('POSTGRES_PORT',     default='5432'),
         }
     }
 else:
@@ -110,72 +96,77 @@ else:
     }
 
 
-# Password validation
-# https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
-
+# ── Validation des mots de passe ───────────────────────────────────────────────
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
 
-# Internationalization
-# https://docs.djangoproject.com/en/6.0/topics/i18n/
-
+# ── Internationalisation ───────────────────────────────────────────────────────
 LANGUAGE_CODE = 'fr-fr'
-
-TIME_ZONE = 'UTC'
-
-USE_I18N = True
-
-USE_TZ = True
+TIME_ZONE     = 'UTC'
+USE_I18N      = True
+USE_TZ        = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/6.0/howto/static-files/
-
-STATIC_URL = 'static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']
+# ── Fichiers statiques ─────────────────────────────────────────────────────────
+STATIC_URL        = 'static/'
+STATICFILES_DIRS  = [BASE_DIR / 'static']
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Stripe (optionnel — dons par carte si STRIPE_DONATIONS_ENABLED=true et clés valides)
-STRIPE_PUBLIC_KEY = config('STRIPE_PUBLIC_KEY', default='')
-STRIPE_SECRET_KEY = config('STRIPE_SECRET_KEY', default='')
+
+# ── URLs principales ───────────────────────────────────────────────────────────
+MAIN_SITE_URL    = os.environ.get('MAIN_SITE_URL', 'http://127.0.0.1:8000')
+MAIN_API_URL     = os.environ.get('MAIN_API_URL',  'http://127.0.0.1:8000/api/v1/')
+DASHBOARD_API_KEY = os.environ.get('DASHBOARD_API_KEY', 'safeplace_secret_dashboard_key_2026')
+
+# URL publique du site (utilisée pour les redirections Wave après paiement)
+SITE_URL = config('SITE_URL', default='http://127.0.0.1:8000')
+
+
+# ── Stripe (optionnel — dons par carte) ────────────────────────────────────────
+STRIPE_PUBLIC_KEY        = config('STRIPE_PUBLIC_KEY', default='')
+STRIPE_SECRET_KEY        = config('STRIPE_SECRET_KEY', default='')
 STRIPE_DONATIONS_ENABLED = config('STRIPE_DONATIONS_ENABLED', default='false').lower() in ('1', 'true', 'yes')
 
-# Dons sans frais d’intégration : liens + virement (lu depuis .env / variables d’environnement)
-DONATION_PAYPAL_URL = config('DONATION_PAYPAL_URL', default='')
-DONATION_KOFI_URL = config('DONATION_KOFI_URL', default='')
-DONATION_TIPEEE_URL = config('DONATION_TIPEEE_URL', default='')
-DONATION_UTIP_URL = config('DONATION_UTIP_URL', default='')
-DONATION_BUYMEACOFFEE_URL = config('DONATION_BUYMEACOFFEE_URL', default='')
-DONATION_BANK_IBAN = config('DONATION_BANK_IBAN', default='')
-DONATION_BANK_LABEL = config('DONATION_BANK_LABEL', default='The SafePlace by K')
-DONATION_NOTIFY_EMAIL = config('DONATION_NOTIFY_EMAIL', default='')
 
-# Session Configuration
+# ── Wave CI (optionnel — dons mobile money Côte d'Ivoire) ─────────────────────
+# Pour activer : ajouter WAVE_API_KEY=wave_ci_prod_... dans le .env
+# Obtenir la clé sur : wave.com/business → Paramètres → API
+WAVE_API_KEY        = config('WAVE_API_KEY', default='')
+WAVE_WEBHOOK_SECRET = config('WAVE_WEBHOOK_SECRET', default='')  # optionnel, sécurise le webhook
+WAVE_DONATIONS_ENABLED = bool(WAVE_API_KEY)
+
+
+# ── Dons sans frais : liens directs + virement ────────────────────────────────
+DONATION_PAYPAL_URL      = config('DONATION_PAYPAL_URL',      default='https://paypal.me/safeplacebyk')
+DONATION_KOFI_URL        = config('DONATION_KOFI_URL',        default='https://ko-fi.com/safeplacebyk')
+DONATION_TIPEEE_URL      = config('DONATION_TIPEEE_URL',      default='')
+DONATION_UTIP_URL        = config('DONATION_UTIP_URL',        default='')
+DONATION_BUYMEACOFFEE_URL = config('DONATION_BUYMEACOFFEE_URL', default='')
+DONATION_BANK_IBAN       = config('DONATION_BANK_IBAN',       default='FR76 1234 5678 9101 1121 3141 516')
+DONATION_BANK_LABEL      = config('DONATION_BANK_LABEL',      default='The SafePlace by K')
+DONATION_NOTIFY_EMAIL    = config('DONATION_NOTIFY_EMAIL',    default='')
+
+
+# ── Sécurité des cookies ───────────────────────────────────────────────────────
 SESSION_COOKIE_SECURE = not DEBUG
 SESSION_COOKIE_HTTPONLY = True
-CSRF_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE    = not DEBUG
 
-# Login URL
-LOGIN_URL = 'admin:login'
+
+# ── Auth ───────────────────────────────────────────────────────────────────────
+LOGIN_URL          = 'admin:login'
 LOGIN_REDIRECT_URL = 'home'
 
-# Celery Configuration
-CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://:redis_password_123@localhost:6379/0')
-CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://:redis_password_123@localhost:6379/0')
-CELERY_ACCEPT_CONTENT = ['json']
+
+# ── Celery ─────────────────────────────────────────────────────────────────────
+CELERY_BROKER_URL      = os.environ.get('CELERY_BROKER_URL',    'redis://:redis_password_123@localhost:6379/0')
+CELERY_RESULT_BACKEND  = os.environ.get('CELERY_RESULT_BACKEND', 'redis://:redis_password_123@localhost:6379/0')
+CELERY_ACCEPT_CONTENT  = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TIMEZONE = 'UTC'
+CELERY_TIMEZONE        = 'UTC'
