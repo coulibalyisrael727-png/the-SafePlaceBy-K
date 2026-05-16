@@ -29,7 +29,7 @@ DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = [
     host.strip()
-    for host in config('ALLOWED_HOSTS', default='localhost,127.0.0.1,testserver,.railway.app').split(',')
+    for host in config('ALLOWED_HOSTS', default='localhost,127.0.0.1,testserver,.railway.app,.vercel.app').split(',')
     if host.strip()
 ]
 
