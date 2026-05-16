@@ -51,8 +51,8 @@ local_settings.py
 /media
 /staticfiles
 /static
-*.sqlite3
-db.sqlite3
+# On autorise db.sqlite3 pour Vercel car le système de fichiers est en lecture seule
+# db.sqlite3
 
 # Testing
 .pytest_cache/

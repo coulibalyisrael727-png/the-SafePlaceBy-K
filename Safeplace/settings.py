@@ -54,6 +54,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -150,7 +151,8 @@ DASHBOARD_NETLIFY_ORIGIN = get_origin(DASHBOARD_NETLIFY_URL)
 DASHBOARD_ORIGIN = get_origin(DASHBOARD_URL)
 
 # URL publique du site (utilisée pour les redirections Wave après paiement)
-SITE_URL = config('SITE_URL', default='http://127.0.0.1:8000')
+# URL publique du site
+SITE_URL = os.environ.get('SITE_URL', 'http://127.0.0.1:8000')
 
 # ── CORS Configuration ───────────────────────────────────────────────────────
 CORS_ALLOWED_ORIGINS = [
