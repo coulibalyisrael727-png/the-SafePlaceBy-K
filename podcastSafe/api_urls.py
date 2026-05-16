@@ -16,9 +16,6 @@ urlpatterns = [
     path('episodes/<int:pk>/delete/', api_views.episode_delete, name='episode_delete'),
     path('categories/', api_views.categories_api, name='categories_api'),
 
-    # Donations
-    path('donations/', api_views.donations_api, name='donations_api'),
-
     # Live Streams
     path('livestreams/', api_views.livestreams_api, name='livestreams_api'),
     path('livestreams/create/', api_views.livestream_create, name='livestream_create'),
@@ -31,6 +28,5 @@ urlpatterns = [
     path('messages/<int:pk>/delete/', api_views.message_delete, name='message_delete'),
     path('messages/mark-all-read/', api_views.message_mark_all_read, name='message_mark_all_read'),
 
-    # Subscriptions
-    path('subscriptions/', api_views.subscriptions_api, name='subscriptions_api'),
+  
 ]

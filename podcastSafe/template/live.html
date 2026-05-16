@@ -504,16 +504,32 @@
               <span class="material-symbols-outlined text-[13px]" style="color:#9ff700;font-variation-settings:'FILL' 1">visibility</span>
               {{ stream.viewers_count|default:"0" }} spectateurs
             </div>
-            {% if stream.stream_url %}
-            <a href="{{ stream.stream_url }}" target="_blank" rel="noopener" class="btn-lime">
-              <span class="material-symbols-outlined text-[16px]">sensors</span>
-              Rejoindre le live
-            </a>
+            {% if stream.embed_url %}
+              <div class="video-wrapper" style="width:100%;aspect-ratio:16/9;border-radius:16px;overflow:hidden;background:#000;">
+                <iframe
+                  src="{{ stream.embed_url }}"
+                  title="{{ stream.title }}"
+                  style="width:100%;height:100%;border:0;"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowfullscreen>
+                </iframe>
+              </div>
+              <div class="mt-4">
+                <a href="{{ stream.stream_url|default:stream.embed_url }}" target="_blank" rel="noopener" class="btn-outline">
+                  <span class="material-symbols-outlined text-[15px]">open_in_new</span>
+                  Ouvrir sur la plateforme
+                </a>
+              </div>
+            {% elif stream.stream_url %}
+              <a href="{{ stream.stream_url }}" target="_blank" rel="noopener" class="btn-lime">
+                <span class="material-symbols-outlined text-[16px]">sensors</span>
+                Rejoindre le live
+              </a>
             {% else %}
-            <a href="{% url 'live' %}" class="btn-lime">
-              <span class="material-symbols-outlined text-[16px]">sensors</span>
-              Rejoindre
-            </a>
+              <a href="{% url 'live' %}" class="btn-lime">
+                <span class="material-symbols-outlined text-[16px]">sensors</span>
+                Rejoindre
+              </a>
             {% endif %}
           </div>
         </div>
@@ -530,7 +546,7 @@
   <section class="mb-14 sp-reveal" aria-labelledby="scheduled-title">
     <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
       <h2 id="scheduled-title" class="section-title">Prochains Lives</h2>
-      <a href="{% url 'subscriptions' %}" class="btn-outline" style="font-size:0.8rem;padding:9px 18px">
+      <a href="{% url 'register' %}" class="btn-outline" style="font-size:0.8rem;padding:9px 18px">
         <span class="material-symbols-outlined text-[15px]">notifications</span>
         Activer les rappels
       </a>
@@ -599,7 +615,7 @@
     <p class="text-sm mb-6 max-w-md mx-auto" style="color:rgba(0,38,27,0.55);line-height:1.7">
       Suivez-nous sur nos réseaux sociaux et abonnez-vous pour être notifié de nos prochains lives.
     </p>
-    <a href="{% url 'subscriptions' %}" class="btn-lime">
+    <a href="{% url 'register' %}" class="btn-lime">
       <span class="material-symbols-outlined text-[16px]">notifications_active</span>
       Rester informé
     </a>
@@ -636,7 +652,7 @@
           Abonnez-vous gratuitement et recevez une notification avant chaque émission en direct.
         </p>
         <div class="flex flex-wrap gap-4 justify-center">
-          <a href="{% url 'subscriptions' %}" class="btn-lime">
+          <a href="{% url 'register' %}" class="btn-lime">
             <span class="material-symbols-outlined text-[16px]">notifications_active</span>
             S'abonner gratuitement
           </a>

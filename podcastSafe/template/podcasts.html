@@ -69,7 +69,7 @@
 
       <!-- Cover / Player thumbnail -->
       {% with yt=episode.get_youtube_embed_url %}
-      <div class="ep-cover" style="background:linear-gradient(135deg,{{ episode.cover_color }},#416900)"
+      <div class="ep-cover" data-cover-color="{{ episode.cover_color }}"
            data-video-url="{% if yt %}{{ yt }}{% else %}{{ episode.video_url }}{% endif %}"
            data-video-type="{% if yt %}youtube{% else %}{% if episode.video_url %}direct{% else %}audio{% endif %}{% endif %}"
            data-audio-url="{{ episode.audio_url }}"
@@ -140,12 +140,12 @@
                 <a class="share-btn-item" href="{{ episode.video_url }}" target="_blank" rel="noopener">
                   <span class="material-symbols-outlined" style="font-size:18px;color:#00261b">open_in_new</span> Source vidéo
                 </a>
-                {% elif episode.audio_url %}
-                <a class="share-btn-item" href="{{ episode.audio_url }}" target="_blank" rel="noopener" download>
+                {% endif %}
+                {% if episode.audio_url %}
+                <a class="share-btn-item" href="{% url 'episode_download' episode.pk %}" rel="noopener">
                   <span class="material-symbols-outlined" style="font-size:18px;color:#00261b">download</span> Télécharger audio
                 </a>
                 {% endif %}
-              </div>
             </div>
             <!-- Lien détail -->
             <a href="{% url 'podcast_detail' episode.pk %}" class="flex items-center gap-1 text-secondary font-bold text-sm hover:underline">
@@ -165,7 +165,7 @@
     </div>
     <h2 class="text-primary text-2xl font-bold mb-3">Bientôt disponible</h2>
     <p class="text-on-surface-variant mb-6 max-w-md mx-auto">Nos épisodes sont en cours de préparation. Revenez bientôt pour découvrir notre contenu chrétien.</p>
-    <a href="{% url 'subscriptions' %}" class="bg-secondary-container text-on-secondary-container font-bold px-6 py-3 rounded-full hover:shadow-lg transition-all inline-block">Être notifié</a>
+    <a href="{% url 'register' %}" class="bg-secondary-container text-on-secondary-container font-bold px-6 py-3 rounded-full hover:shadow-lg transition-all inline-block">Être notifié</a>
   </div>
   {% endif %}
 </main>
@@ -262,6 +262,11 @@ document.querySelector('.js-modal-copy').addEventListener('click', function() {
     b.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px">check</span> Copié !';
     setTimeout(function() { b.innerHTML = o; }, 2000);
   });
+});
+
+document.querySelectorAll('[data-cover-color]').forEach(function(el) {
+  var color = el.dataset.coverColor || '#416900';
+  el.style.background = 'linear-gradient(135deg,' + color + ',#416900)';
 });
 
 // Share panels

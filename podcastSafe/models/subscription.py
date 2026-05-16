@@ -10,6 +10,7 @@ class Subscription(models.Model):
     first_name = models.CharField(max_length=100, verbose_name="Prénom")
     last_name = models.CharField(max_length=100, blank=True, verbose_name="Nom")
     email = models.EmailField(unique=True, verbose_name="Adresse e-mail")
+    photo_url = models.URLField(blank=True, null=True, verbose_name="URL photo de profil")
     
     # Notification preferences
     notify_podcasts = models.BooleanField(default=True, verbose_name="Notifier pour les podcasts")

@@ -448,14 +448,7 @@
         </div>
       </div>
 
-      <!-- Testimonial -->
-      <div class="reg-testimonial">
-        <p>"The SafePlace by K a transformé ma vie spirituelle. Les prédications m'accompagnent chaque matin."</p>
-        <div class="reg-tes-author">
-          <div class="reg-tes-avatar">M</div>
-          <span class="reg-tes-name">Marie L. — Abonnée depuis 2024</span>
-        </div>
-      </div>
+     
     </div>
 
     <!-- ════ RIGHT PANEL (FORM) ════ -->
@@ -464,35 +457,67 @@
       <p class="reg-form-subtitle">Rejoignez {{ subscriber_count|default:"+" }}{% if subscriber_count %}+{% endif %} membres de notre communauté</p>
 
       <!-- Messages -->
-      <div class="reg-message success" id="reg-success">
-        <span class="material-symbols-outlined" style="font-size:22px;color:#416900">check_circle</span>
-        <span id="reg-success-text">Bienvenue dans la communauté ! Vérifiez votre email.</span>
+      {% if error_message %}
+      <div class="reg-message error show" id="reg-error">
+        <span class="material-symbols-outlined" style="font-size:22px">error</span>
+        <span id="reg-error-text">{{ error_message }}</span>
       </div>
+      {% else %}
       <div class="reg-message error" id="reg-error">
         <span class="material-symbols-outlined" style="font-size:22px">error</span>
         <span id="reg-error-text">Une erreur est survenue.</span>
       </div>
+      {% endif %}
+      {% if success_message %}
+      <div class="reg-message success show" id="reg-success">
+        <span class="material-symbols-outlined" style="font-size:22px;color:#416900">check_circle</span>
+        <span id="reg-success-text">{{ success_message }}</span>
+      </div>
+      {% else %}
+      <div class="reg-message success" id="reg-success">
+        <span class="material-symbols-outlined" style="font-size:22px;color:#416900">check_circle</span>
+        <span id="reg-success-text">Bienvenue dans la communauté ! Vérifiez votre email.</span>
+      </div>
+      {% endif %}
 
       <!-- Form -->
-      <form id="reg-form" novalidate>
+      <form id="reg-form" method="post" action="" novalidate>
         {% csrf_token %}
 
         <!-- Prénom / Nom -->
         <div class="reg-field-row">
           <div class="reg-field">
             <label class="reg-label" for="reg-fname">Prénom <span class="req">*</span></label>
-            <input class="reg-input" type="text" id="reg-fname" name="first_name" placeholder="Jean" required autocomplete="given-name">
+            <input class="reg-input" type="text" id="reg-fname" name="first_name" placeholder="Jean" required autocomplete="given-name" value="{{ form_data.first_name|default_if_none:'' }}">
           </div>
           <div class="reg-field">
             <label class="reg-label" for="reg-lname">Nom</label>
-            <input class="reg-input" type="text" id="reg-lname" name="last_name" placeholder="Dupont" autocomplete="family-name">
+            <input class="reg-input" type="text" id="reg-lname" name="last_name" placeholder="Dupont" autocomplete="family-name" value="{{ form_data.last_name|default_if_none:'' }}">
           </div>
         </div>
 
         <!-- Email -->
         <div class="reg-field">
           <label class="reg-label" for="reg-email">Adresse e-mail <span class="req">*</span></label>
-          <input class="reg-input" type="email" id="reg-email" name="email" placeholder="jean@exemple.com" required autocomplete="email">
+          <input class="reg-input" type="email" id="reg-email" name="email" placeholder="jean@exemple.com" required autocomplete="email" value="{{ form_data.email|default_if_none:'' }}">
+        </div>
+
+        <!-- Photo de profil -->
+        <div class="reg-field">
+          <label class="reg-label" for="reg-photo-url">Photo de profil (URL)</label>
+          <input class="reg-input" type="url" id="reg-photo-url" name="photo_url" placeholder="https://..." autocomplete="photo" value="{{ form_data.photo_url|default_if_none:'' }}">
+          <small style="color:#5a7060;font-size:0.82rem;">Optionnel : affichée comme avatar dans le menu si vous vous inscrivez.</small>
+        </div>
+
+        <!-- Mot de passe -->
+        <div class="reg-field">
+          <label class="reg-label" for="reg-password">Mot de passe <span class="req">*</span></label>
+          <input class="reg-input" type="password" id="reg-password" name="password" placeholder="Au moins 8 caractères" required autocomplete="new-password">
+        </div>
+
+        <div class="reg-field">
+          <label class="reg-label" for="reg-password-confirm">Confirmez le mot de passe <span class="req">*</span></label>
+          <input class="reg-input" type="password" id="reg-password-confirm" name="password_confirm" placeholder="Retapez le mot de passe" required autocomplete="new-password">
         </div>
 
         <!-- Préférences notifications -->
@@ -530,14 +555,7 @@
         </div>
       </form>
 
-      <div class="reg-divider">ou soutenez notre mission</div>
-
-      <a href="{% url 'subscriptions' %}" class="reg-donate-link">
-        <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">volunteer_activism</span>
-        Faire un don au ministère
-        <span class="material-symbols-outlined" style="font-size:16px;margin-left:auto">arrow_forward</span>
-      </a>
-    </div>
+      
 
   </div>
 </div>
@@ -550,11 +568,20 @@ function toggleCheck(item) {
   if (cb) cb.checked = !cb.checked;
 }
 
+function getCookie(name) {
+  var value = "; " + document.cookie;
+  var parts = value.split('; ' + name + '=');
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null;
+}
+
 document.getElementById('reg-form').addEventListener('submit', function(e) {
   e.preventDefault();
   var form = this;
   var fname = document.getElementById('reg-fname').value.trim();
   var email = document.getElementById('reg-email').value.trim();
+  var password = document.getElementById('reg-password').value;
+  var passwordConfirm = document.getElementById('reg-password-confirm').value;
   var errEl = document.getElementById('reg-error');
   var errTxt = document.getElementById('reg-error-text');
   var sucEl = document.getElementById('reg-success');
@@ -574,8 +601,16 @@ document.getElementById('reg-form').addEventListener('submit', function(e) {
     document.getElementById('reg-email').classList.add('error');
     valid = false;
   }
+  if (!password || password.length < 8) {
+    document.getElementById('reg-password').classList.add('error');
+    valid = false;
+  }
+  if (password !== passwordConfirm) {
+    document.getElementById('reg-password-confirm').classList.add('error');
+    valid = false;
+  }
   if (!valid) {
-    errTxt.textContent = 'Veuillez remplir les champs obligatoires correctement.';
+    errTxt.textContent = 'Veuillez remplir correctement tous les champs requis.';
     errEl.classList.add('show');
     return;
   }
@@ -590,21 +625,18 @@ document.getElementById('reg-form').addEventListener('submit', function(e) {
   btnIcon.style.display = 'none';
   btnText.textContent = 'Inscription en cours…';
 
-  // Payload
   var payload = {
     first_name: fname,
     last_name: document.getElementById('reg-lname').value.trim(),
     email: email,
-    notify_podcasts: document.getElementById('notif-podcast').checked,
-    notify_live: document.getElementById('notif-live').checked,
-    notify_videos: document.getElementById('notif-video').checked
-  };
-
-  fetch('{% url "create_subscription" %}', {
+    password: password,
+    password_confirm: passwordConfirm,
+    photo_url: document.getElementById('reg-photo-url').value.trim(),
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+      'X-CSRFToken': getCookie('csrftoken'),
+      'X-Requested-With': 'XMLHttpRequest'
     },
     body: JSON.stringify(payload)
   })
@@ -618,11 +650,9 @@ document.getElementById('reg-form').addEventListener('submit', function(e) {
       btnText.textContent = 'Inscrit(e) !';
       btnIcon.textContent = 'check';
       btn.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
-      document.getElementById('reg-success-text').textContent =
-        'Bienvenue ' + fname + ' ! Vérifiez votre boîte mail pour confirmer votre inscription.';
+      document.getElementById('reg-success-text').textContent = data.message || 'Bienvenue ! Votre compte est créé.';
       sucEl.classList.add('show');
       form.reset();
-      // Réinitialiser les checks
       document.getElementById('notif-podcast').checked = true;
       document.getElementById('notif-live').checked = true;
       document.getElementById('notif-video').checked = false;

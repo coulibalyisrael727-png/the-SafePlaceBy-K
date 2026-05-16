@@ -153,6 +153,27 @@ services:
     networks:
       - safeplace_network
 
+  # Service Dashboard - Interface d'administration
+  dashboard:
+    build:
+      context: ./dashboard-service
+    container_name: safeplace_dashboard
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8001"
+    environment:
+      DEBUG: "True"
+      SECRET_KEY: ${SECRET_KEY:-dashboard-secret-key}
+      ALLOWED_HOSTS: "*"
+      MAIN_API_URL: http://web:8000/api/v1/
+      DASHBOARD_API_KEY: ${DASHBOARD_API_KEY:-safeplace_secret_dashboard_key_2026}
+    ports:
+      - "8001:8001"
+    depends_on:
+      - web
+    networks:
+      - safeplace_network
+
   # Service Nginx - Reverse proxy et serveur statique
   nginx:
     image: nginx:alpine
@@ -167,6 +188,7 @@ services:
       - ./ssl:/etc/nginx/ssl:ro
     depends_on:
       - web
+      - dashboard
     networks:
       - safeplace_network
 

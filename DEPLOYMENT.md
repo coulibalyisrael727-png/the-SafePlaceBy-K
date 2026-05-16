@@ -25,6 +25,86 @@
 
 ## [GLOBE] Options de Déploiement
 
+## [SPLIT] Architecture Séparée: Site Principal + Dashboard
+
+Le projet utilise une architecture microservice où le site principal et le dashboard peuvent être hébergés séparément tout en communiquant via API.
+
+### Architecture
+- **Site Principal** (port 8000): Application Django principale avec API REST
+- **Dashboard Service** (port 8001): Microservice Django indépendant pour l'administration
+
+### Communication Inter-Services
+- Le dashboard consomme les API du site principal via `MAIN_API_URL`
+- Authentification via `DASHBOARD_API_KEY` (doit être identique sur les deux services)
+- CORS configuré pour autoriser les requêtes cross-origin
+
+### Configuration Site Principal
+```env
+# Dans .env du site principal
+DASHBOARD_URL=http://localhost:8001
+DASHBOARD_API_KEY=safeplace_secret_dashboard_key_2026
+```
+
+### Configuration Dashboard
+```env
+# Dans .env du dashboard-service
+MAIN_API_URL=http://localhost:8000/api/v1/
+MAIN_SITE_URL=http://localhost:8000
+DASHBOARD_API_KEY=safeplace_secret_dashboard_key_2026
+MOCK_API_DATA=False  # True pour Vercel sans site principal
+```
+
+### Déploiement Séparé
+
+#### Option 1: Même serveur, ports différents
+```bash
+# Site principal
+cd /path/to/main-site
+python manage.py runserver 0.0.0.0:8000
+
+# Dashboard (autre terminal)
+cd /path/to/dashboard-service
+python manage.py runserver 0.0.0.0:8001
+```
+
+#### Option 2: Serveurs différents
+```bash
+# Site principal sur server1.com
+MAIN_API_URL=https://server1.com/api/v1/
+MAIN_SITE_URL=https://server1.com
+
+# Dashboard sur dashboard.server1.com
+DASHBOARD_URL=https://dashboard.server1.com
+```
+
+#### Option 3: Vercel (Dashboard) + Autre hébergeur (Site Principal)
+```bash
+# Dashboard sur Vercel
+MOCK_API_DATA=False  # Si le site principal est accessible
+MAIN_API_URL=https://main-app-production.com/api/v1/
+MAIN_SITE_URL=https://main-app-production.com
+
+# Site principal sur Railway/Heroku/AWS
+DASHBOARD_URL=https://dashboard-safeplace.vercel.app
+```
+
+### API Endpoints Disponibles
+Le dashboard peut accéder à ces endpoints du site principal:
+- `GET /api/v1/dashboard-data/` - Statistiques globales
+- `GET /api/v1/analytics/` - Analytics détaillées
+- `GET /api/v1/episodes/` - Liste des épisodes
+- `POST /api/v1/episodes/create/` - Créer un épisode
+- `DELETE /api/v1/episodes/<pk>/delete/` - Supprimer un épisode
+- `GET /api/v1/livestreams/` - Liste des live streams
+- `GET /api/v1/donations/` - Liste des donations
+- `GET /api/v1/messages/` - Messages de contact
+- `GET /api/v1/subscriptions/` - Liste des abonnements
+
+Tous les endpoints nécessitent l'en-tête:
+```
+X-API-KEY: safeplace_secret_dashboard_key_2026
+```
+
 ### 1. **AWS** (Recommandé)
 
 ```bash

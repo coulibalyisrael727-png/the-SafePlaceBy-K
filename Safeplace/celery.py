@@ -35,10 +35,6 @@ app.conf.update(
             'task': 'podcastSafe.tasks.send_new_episode_notifications',
             'schedule': crontab(hour=12, minute=0),  # Chaque jour à midi
         },
-        'cleanup-old-donations': {
-            'task': 'podcastSafe.tasks.cleanup_old_donations',
-            'schedule': crontab(hour=2, minute=0),  # Chaque jour à 2h du matin
-        },
     },
 )
 

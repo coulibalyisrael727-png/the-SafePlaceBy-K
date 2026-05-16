@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Episode, Category, LiveStream, Donation
+from .models import Episode, Category, LiveStream
 
 
 @admin.register(Category)
@@ -20,10 +20,3 @@ class LiveStreamAdmin(admin.ModelAdmin):
     list_display = ['title', 'platform', 'status', 'viewers_count', 'scheduled_at']
     list_filter = ['platform', 'status']
     search_fields = ['title']
-
-
-@admin.register(Donation)
-class DonationAdmin(admin.ModelAdmin):
-    list_display = ['name', 'amount', 'email', 'status', 'created_at']
-    list_filter = ['status']
-    search_fields = ['name', 'email']

@@ -19,6 +19,7 @@ class Episode(models.Model):
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
     audio_url = models.URLField(blank=True)
     video_url = models.URLField(blank=True)
+    video_file = models.FileField(upload_to='videos/%Y/%m/', blank=True, null=True, verbose_name='Fichier vidéo local')
     duration = models.CharField(max_length=MAX_DURATION_LENGTH, blank=True)
     host = models.CharField(max_length=100, blank=True, default='The SafePlace by K')
     cover_color = models.CharField(max_length=7, default='#00261b')

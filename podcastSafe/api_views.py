@@ -8,7 +8,7 @@ from django.conf import settings
 from datetime import timedelta
 import logging
 
-from .models import Episode, Donation, Category, LiveStream, Subscription, ContactMessage
+from .models import Episode, Category, LiveStream, Subscription, ContactMessage
 
 logger = logging.getLogger(__name__)
 
@@ -33,9 +33,6 @@ def dashboard_data(request):
     """API endpoint pour fournir les données du dashboard"""
     try:
         total_episodes = Episode.objects.count()
-        total_donations = Donation.objects.filter(status='completed').aggregate(
-            total=Sum('amount')
-        )['total'] or 0
         total_messages = ContactMessage.objects.count()
         unread_messages = ContactMessage.objects.filter(is_read=False).count()
         active_lives = LiveStream.objects.filter(status='live').count()
@@ -56,20 +53,7 @@ def dashboard_data(request):
             for ep in recent_episodes
         ]
 
-        # Donations récentes
-        recent_donations = Donation.objects.filter(status='completed').order_by('-created_at')[:5]
-        recent_donations_data = [
-            {
-                'id': d.id,
-                'name': d.name or 'Anonyme',
-                'email': d.email,
-                'amount': float(d.amount),
-                'created_at': d.created_at.strftime('%Y-%m-%d'),
-            }
-            for d in recent_donations
-        ]
-
-        # Messages récents
+        # Messages récentes
         recent_messages = ContactMessage.objects.order_by('-created_at')[:5]
         recent_messages_data = [
             {
@@ -87,17 +71,12 @@ def dashboard_data(request):
         thirty_days_ago = timezone.now() - timedelta(days=30)
         recent_stats = {
             'new_episodes': Episode.objects.filter(created_at__gte=thirty_days_ago).count(),
-            'recent_donations_amount': float(
-                Donation.objects.filter(status='completed', created_at__gte=thirty_days_ago)
-                .aggregate(total=Sum('amount'))['total'] or 0
-            ),
             'active_streams': LiveStream.objects.filter(status='live').count(),
         }
 
         data = {
             'stats': {
                 'total_episodes': total_episodes,
-                'total_donations': float(total_donations),
                 'total_messages': total_messages,
                 'unread_messages': unread_messages,
                 'active_lives': active_lives,
@@ -105,7 +84,6 @@ def dashboard_data(request):
             },
             'recent_data': {
                 'recent_episodes': recent_episodes_data,
-                'recent_donations': recent_donations_data,
                 'recent_messages': recent_messages_data,
             },
             'recent_stats': recent_stats,
@@ -259,67 +237,6 @@ def categories_api(request):
     return Response({
         'categories': [{'id': c.id, 'name': c.name, 'icon': c.icon} for c in cats]
     })
-
-
-# ──────────────────────────────────────────────
-# Donations
-# ──────────────────────────────────────────────
-
-@api_view(['GET'])
-@permission_classes([IsDashboardOrAdmin])
-def donations_api(request):
-    """Liste des donations avec stats"""
-    try:
-        page = int(request.GET.get('page', 1))
-        page_size = int(request.GET.get('page_size', 20))
-        status_filter = request.GET.get('status', '')
-
-        queryset = Donation.objects.all()
-        if status_filter:
-            queryset = queryset.filter(status=status_filter)
-
-        total = queryset.count()
-        start = (page - 1) * page_size
-        donations = queryset.order_by('-created_at')[start:start + page_size]
-
-        donations_data = [
-            {
-                'id': d.id,
-                'name': d.name or 'Anonyme',
-                'email': d.email,
-                'amount': float(d.amount),
-                'message': d.message,
-                'status': d.status,
-                'created_at': d.created_at.strftime('%Y-%m-%d'),
-            }
-            for d in donations
-        ]
-
-        completed = Donation.objects.filter(status='completed')
-        stats = {
-            'total_amount': float(completed.aggregate(total=Sum('amount'))['total'] or 0),
-            'total_count': completed.count(),
-            'this_month': float(
-                completed.filter(created_at__month=timezone.now().month)
-                .aggregate(total=Sum('amount'))['total'] or 0
-            ),
-            'average': float(completed.aggregate(avg=Avg('amount'))['avg'] or 0),
-            'donor_count': completed.values('email').distinct().count(),
-            'pending_count': Donation.objects.filter(status='pending').count(),
-        }
-
-        return Response({
-            'donations': donations_data,
-            'stats': stats,
-            'pagination': {
-                'page': page, 'page_size': page_size,
-                'total': total, 'pages': (total + page_size - 1) // page_size
-            }
-        })
-
-    except Exception as e:
-        logger.error(f"Error in donations_api: {str(e)}")
-        return Response({'error': str(e)}, status=500)
 
 
 # ──────────────────────────────────────────────
@@ -547,9 +464,7 @@ def analytics_data(request):
 
         # Totaux
         total_views = Episode.objects.aggregate(total=Sum('views_count'))['total'] or 0
-        total_donations = float(
-            Donation.objects.filter(status='completed').aggregate(total=Sum('amount'))['total'] or 0
-        )
+        total_messages = ContactMessage.objects.count()
         total_subs = Subscription.objects.filter(is_active=True).count()
 
         # Par catégorie
@@ -559,7 +474,7 @@ def analytics_data(request):
 
         data = {
             'total_views': total_views,
-            'total_donations': total_donations,
+            'total_messages': total_messages,
             'total_subscribers': total_subs,
             'total_episodes': Episode.objects.count(),
             'top_episodes': [

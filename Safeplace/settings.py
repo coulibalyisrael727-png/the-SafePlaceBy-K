@@ -44,11 +44,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'corsheaders',
     'podcastSafe',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -70,6 +72,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'podcastSafe.context_processors.profile_info',
             ],
         },
     },
@@ -125,35 +128,58 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # ── URLs principales ───────────────────────────────────────────────────────────
 MAIN_SITE_URL    = os.environ.get('MAIN_SITE_URL', 'http://127.0.0.1:8000')
 MAIN_API_URL     = os.environ.get('MAIN_API_URL',  'http://127.0.0.1:8000/api/v1/')
+from urllib.parse import urlparse
+
 DASHBOARD_API_KEY = os.environ.get('DASHBOARD_API_KEY', 'safeplace_secret_dashboard_key_2026')
+DASHBOARD_NETLIFY_URL = os.environ.get('DASHBOARD_NETLIFY_URL', 'https://dashboard-safeplace.netlify.app')
+DASHBOARD_URL = os.environ.get('DASHBOARD_URL', DASHBOARD_NETLIFY_URL)
+
+# Normalize origins for CORS (no path allowed)
+def get_origin(url):
+    parsed = urlparse(url)
+    if parsed.scheme and parsed.netloc:
+        return f"{parsed.scheme}://{parsed.netloc}"
+    return url.rstrip('/')
+
+DASHBOARD_NETLIFY_ORIGIN = get_origin(DASHBOARD_NETLIFY_URL)
+DASHBOARD_ORIGIN = get_origin(DASHBOARD_URL)
 
 # URL publique du site (utilisée pour les redirections Wave après paiement)
 SITE_URL = config('SITE_URL', default='http://127.0.0.1:8000')
 
+# ── CORS Configuration ───────────────────────────────────────────────────────
+CORS_ALLOWED_ORIGINS = [
+    DASHBOARD_NETLIFY_ORIGIN,
+    DASHBOARD_ORIGIN,
+    'http://127.0.0.1:8001',
+    'http://localhost:8001',
+]
 
-# ── Stripe (optionnel — dons par carte) ────────────────────────────────────────
-STRIPE_PUBLIC_KEY        = config('STRIPE_PUBLIC_KEY', default='')
-STRIPE_SECRET_KEY        = config('STRIPE_SECRET_KEY', default='')
-STRIPE_DONATIONS_ENABLED = config('STRIPE_DONATIONS_ENABLED', default='false').lower() in ('1', 'true', 'yes')
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+    'x-api-key',
+]
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
 
 
-# ── Wave CI (optionnel — dons mobile money Côte d'Ivoire) ─────────────────────
-# Pour activer : ajouter WAVE_API_KEY=wave_ci_prod_... dans le .env
-# Obtenir la clé sur : wave.com/business → Paramètres → API
-WAVE_API_KEY        = config('WAVE_API_KEY', default='')
-WAVE_WEBHOOK_SECRET = config('WAVE_WEBHOOK_SECRET', default='')  # optionnel, sécurise le webhook
-WAVE_DONATIONS_ENABLED = bool(WAVE_API_KEY)
-
-
-# ── Dons sans frais : liens directs + virement ────────────────────────────────
-DONATION_PAYPAL_URL      = config('DONATION_PAYPAL_URL',      default='https://paypal.me/safeplacebyk')
-DONATION_KOFI_URL        = config('DONATION_KOFI_URL',        default='https://ko-fi.com/safeplacebyk')
-DONATION_TIPEEE_URL      = config('DONATION_TIPEEE_URL',      default='')
-DONATION_UTIP_URL        = config('DONATION_UTIP_URL',        default='')
-DONATION_BUYMEACOFFEE_URL = config('DONATION_BUYMEACOFFEE_URL', default='')
-DONATION_BANK_IBAN       = config('DONATION_BANK_IBAN',       default='FR76 1234 5678 9101 1121 3141 516')
-DONATION_BANK_LABEL      = config('DONATION_BANK_LABEL',      default='The SafePlace by K')
-DONATION_NOTIFY_EMAIL    = config('DONATION_NOTIFY_EMAIL',    default='')
+# ── Paiements et dons désactivés ───────────────────────────────────────────
+# Plus de configuration Stripe / Wave / paiements directs dans ce projet.
 
 
 # ── Sécurité des cookies ───────────────────────────────────────────────────────

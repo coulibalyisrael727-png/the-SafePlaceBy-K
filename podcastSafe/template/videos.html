@@ -100,9 +100,10 @@
 
       <!-- Thumbnail cliquable → ouvre le player -->
       <div class="vid-thumb"
-           style="background:linear-gradient(135deg,{{ episode.cover_color }},#416900)"
+           data-cover-color="{{ episode.cover_color }}"
            data-video-url="{{ episode.get_youtube_embed_url|default:episode.video_url }}"
            data-video-type="{% if episode.get_youtube_embed_url %}youtube{% else %}direct{% endif %}"
+           data-download-url="{% if episode.video_url and not episode.get_youtube_embed_url %}{% url 'episode_download' episode.pk %}{% endif %}"
            data-title="{{ episode.title }}"
            data-episode-url="{% url 'podcast_detail' episode.pk %}"
            onclick="openVideoModal(this)">
@@ -154,9 +155,9 @@
                 <a class="share-btn-item" href="mailto:?subject={{ episode.title|urlencode }}&body=Regardez%20cette%20vid%C3%A9o%20:%20http://127.0.0.1:8000{% url 'podcast_detail' episode.pk %}">
                   <span class="material-symbols-outlined" style="font-size:18px;color:#ea4335">mail</span> Email
                 </a>
-                {% if episode.video_url %}
-                <a class="share-btn-item" href="{{ episode.video_url }}" target="_blank" rel="noopener">
-                  <span class="material-symbols-outlined" style="font-size:18px;color:#00261b">open_in_new</span> Ouvrir source
+                        {% if episode.video_url and not episode.get_youtube_embed_url %}
+                <a class="share-btn-item" href="{% url 'episode_download' episode.pk %}" rel="noopener" download>
+                  <span class="material-symbols-outlined" style="font-size:18px;color:#00261b">download</span> Télécharger vidéo
                 </a>
                 {% endif %}
               </div>
@@ -165,6 +166,11 @@
             <a href="{% url 'podcast_detail' episode.pk %}" class="flex items-center gap-1 text-secondary font-bold text-sm hover:underline">
               Voir <span class="material-symbols-outlined text-[15px]">arrow_forward</span>
             </a>
+            {% if episode.video_url and not episode.get_youtube_embed_url %}
+            <a href="{% url 'episode_download' episode.pk %}" class="flex items-center gap-1 text-secondary font-bold text-sm hover:underline">
+              <span class="material-symbols-outlined text-[15px]">download</span> Télécharger
+            </a>
+            {% endif %}
           </div>
         </div>
       </div>
@@ -179,7 +185,7 @@
     </div>
     <h2 class="text-primary text-2xl font-bold mb-3">Vidéos à venir</h2>
     <p class="text-on-surface-variant mb-6 max-w-md mx-auto">Publiez une vidéo depuis le studio en collant une URL YouTube ou un lien direct.</p>
-    <a href="{% url 'subscriptions' %}" class="bg-secondary-container text-on-secondary-container font-bold px-6 py-3 rounded-full hover:shadow-lg transition-all inline-block">Être notifié</a>
+    <a href="{% url 'register' %}" class="bg-secondary-container text-on-secondary-container font-bold px-6 py-3 rounded-full hover:shadow-lg transition-all inline-block">Être notifié</a>
   </div>
   {% endif %}
 </main>
@@ -193,6 +199,11 @@
         <a id="vid-modal-ext-link" href="#" target="_blank" rel="noopener"
            class="flex items-center gap-1 text-xs text-white/60 hover:text-white font-bold px-3 py-1.5 rounded-full" style="background:rgba(255,255,255,0.08)">
           <span class="material-symbols-outlined" style="font-size:15px">open_in_new</span> Ouvrir
+        </a>
+        <a id="vid-modal-download" href="#" rel="noopener" download
+           class="flex items-center gap-1 text-xs text-white/60 hover:text-white font-bold px-3 py-1.5 rounded-full"
+           style="background:rgba(255,255,255,0.08);display:none">
+          <span class="material-symbols-outlined" style="font-size:15px">download</span> Télécharger
         </a>
         <button class="vid-modal-close" onclick="closeVideoModal()" aria-label="Fermer">
           <span class="material-symbols-outlined" style="font-size:20px">close</span>
@@ -228,6 +239,17 @@
 <script>
 var currentModalEpisodeUrl = '';
 
+function applyVideoCoverColors() {
+  document.querySelectorAll('.vid-thumb[data-cover-color]').forEach(function(thumb) {
+    var color = thumb.dataset.coverColor;
+    if (color) {
+      thumb.style.background = 'linear-gradient(135deg,' + color + ',#416900)';
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', applyVideoCoverColors);
+
 function openVideoModal(thumb) {
   var videoUrl = thumb.dataset.videoUrl;
   var videoType = thumb.dataset.videoType;
@@ -238,6 +260,13 @@ function openVideoModal(thumb) {
   document.getElementById('vid-modal-title').textContent = title;
   document.getElementById('vid-modal-ext-link').href = videoUrl || episodeUrl;
   document.getElementById('vid-modal-detail').href = episodeUrl;
+  var downloadButton = document.getElementById('vid-modal-download');
+  if (videoType === 'direct' && thumb.dataset.downloadUrl) {
+    downloadButton.href = thumb.dataset.downloadUrl;
+    downloadButton.style.display = 'inline-flex';
+  } else {
+    downloadButton.style.display = 'none';
+  }
   document.getElementById('vid-modal-wa').href = 'https://wa.me/?text=' + encodeURIComponent(title + ' ' + location.origin + episodeUrl);
   document.getElementById('vid-modal-email').href = 'mailto:?subject=' + encodeURIComponent(title) + '&body=' + encodeURIComponent('Regardez cette vidéo : ' + location.origin + episodeUrl);
 

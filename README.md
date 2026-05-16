@@ -1,122 +1,76 @@
-# [SAFE] The SafePlace by K - Architecture Microservices avec Docker
+# [SAFE] The SafePlace by K - Architecture Découplée
 
-Architecture containerisée complète pour la plateforme de podcast SafePlace avec microservices, base de données PostgreSQL, cache Redis, paiements Stripe et tâches asynchrones Celery.
+Plateforme de podcast chrétienne moderne utilisant une architecture microservices/découplée. Le backend gère la logique métier et les APIs, tandis que le tableau de bord est un service indépendant optimisé pour un hébergement séparé (ex: Netlify).
 
-## [LIST] Architecture
+## [LIST] Architecture Système
 
 ```
-┌─────────────────────────────────────────────────┐
-│           Nginx (Reverse Proxy)                 │
-│        Port 80 (HTTP) / 443 (HTTPS)             │
-└────────┬──────────────────────────────────┬─────┘
-         │                                  │
-    ┌────▼─────────────┐          ┌────────▼──────┐
-    │  Django Web App  │          │  Nginx Static │
-    │  (Gunicorn)      │          │  & Media      │
-    │  Port 8000       │          │               │
-    └────┬─────────────┘          └───────────────┘
-         │
-    ┌────┴──────────────┬──────────────┬──────────────┐
-    │                   │              │              │
-┌───▼──────┐      ┌────▼────┐    ┌───▼──────┐  ┌───▼──────┐
-│PostgreSQL│      │  Redis  │    │ Celery   │  │ Celery   │
-│   DB     │      │  Cache  │    │ Worker   │  │  Beat    │
-│ Port5432 │      │ Port6379│    │          │  │Scheduler │
-└──────────┘      └─────────┘    └──────────┘  └──────────┘
+      ┌──────────────────────────────────┐
+      │      Dashboard (Frontend)        │
+      │      Hébergé sur Netlify         │
+      └──────────────┬───────────────────┘
+                     │
+                     │ Appels API REST
+                     ▼
+      ┌──────────────────────────────────┐
+      │      Backend (Django App)        │
+      │      Hébergé sur Cloud / VPS     │
+      └──────────────┬───────────────────┘
+                     │
+    ┌────────────────┼────────────────┬──────────────┐
+    │                │                │              │
+┌───▼──────┐   ┌────▼────┐      ┌───▼──────┐  ┌───▼──────┐
+│PostgreSQL│   │  Redis  │      │ Celery   │  │ Celery   │
+│   DB     │   │  Cache  │      │ Worker   │  │  Beat    │
+└──────────┘   └─────────┘      └──────────┘  └──────────┘
 ```
 
-## [ROCKET] Services Inclus
+## [ROCKET] Composants du Projet
 
-1. **PostgreSQL** - Base de données relationnelle
-2. **Redis** - Cache et broker pour Celery
-3. **Django Web** - Application principale
-4. **Celery Worker** - Traitement des tâches asynchrones
-5. **Celery Beat** - Scheduler pour tâches planifiées
-6. **Nginx** - Reverse proxy et serveur statique
+1. **`podcastSafe` (Backend)** : Application Django 6.0+ gérant les podcasts, vidéos, lives et l'API REST.
+2. **`dashboard-service` (Frontend)** : Interface d'administration indépendante communicant via API.
+3. **Services de données** : PostgreSQL (Données), Redis (Cache/Broker).
+4. **Traitement de fond** : Celery & Celery Beat pour les tâches planifiées.
 
-## [PACKAGE] Prérequis
+## [INSTALL] Installation Rapide (Local)
 
-- Docker ≥ 20.10
-- Docker Compose ≥ 2.0
-- Git
-
-## [INSTALL] Installation
-
-### Méthode 1: Docker Compose (Recommandé)
+Le projet est conçu pour être lancé via Docker pour le développement local complet (Backend + Dashboard).
 
 1. **Cloner le projet**
 ```bash
-git clone https://github.com/kingBen-j/the-SafePlace.git
-cd the-SafePlace
+git clone https://github.com/coulibalyisrael727-png/the-SafePlaceBy-K.git
+cd the-SafePlaceBy-K
 ```
 
 2. **Configurer l'environnement**
 ```bash
 cp .env.example .env
-# Éditer .env avec vos configurations
+# Éditer .env avec vos configurations (clés Stripe, Wave, etc.)
 ```
 
-3. **Démarrer les services**
+3. **Démarrer tous les services**
 ```bash
 docker-compose up -d
 ```
+Ceci lance le backend (8000), le dashboard (8001), PostgreSQL, Redis et Nginx.
 
 4. **Initialiser la base de données**
 ```bash
 docker-compose exec web python manage.py migrate
 docker-compose exec web python manage.py createsuperuser
-docker-compose exec web python manage.py collectstatic --noinput
-```
-
-### Méthode 2: Développement Local
-
-1. **Installer les dépendances Python**
-```bash
-pip install -r requirements.txt
-```
-
-2. **Configurer PostgreSQL et Redis**
-```bash
-# Installer PostgreSQL et Redis localement
-# Configurer les variables d'environnement
-```
-
-3. **Démarrer l'application**
-```bash
-python manage.py migrate
-python manage.py runserver
 ```
 
 ## Usage
 
 ### Pour les Utilisateurs
+1. **Accéder au site** : `http://localhost` (via Nginx) ou `http://localhost:8000` (Direct Django).
+2. **Explorer** : Navigation fluide entre podcasts, vidéos et lives.
 
-1. **Accéder au site**
-   - URL: `http://localhost`
-   - Navigation intuitive entre podcasts et vidéos
-
-2. **S'abonner aux notifications**
-   - Formulaire d'abonnement gratuit
-   - Notifications par email pour nouveaux contenus
-
-3. **Faire un don**
-   - Paiement sécurisé via Stripe
-   - Plusieurs montants disponibles
-
-### Pour les Administrateurs
-
-1. **Accéder au dashboard**
-   - URL: `http://localhost/admin`
-   - Authentification requise
-
-2. **Publier des épisodes**
-   - Ajouter podcasts et vidéos
-   - Gérer les catégories
-   - Programmer les lives
-
-3. **Gérer les donations**
-   - Voir l'historique des donations
-   - Exporter les données
+### Pour les Administrateurs (Dashboard)
+Le tableau de bord est une application indépendante.
+1. **Local** : Accédez à `http://localhost:8001` ou via la route `/dashboard/` du site principal qui vous redirigera.
+2. **Production** : Accédez à l'URL Netlify fournie lors du déploiement.
+3. **Actions** : Publiez des épisodes, gérez les lives, suivez les analytics et les donations.
 
 ### Commandes de Base
 

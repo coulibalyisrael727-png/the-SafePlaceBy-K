@@ -246,7 +246,19 @@ tailwind.config = {
         <span class="material-symbols-outlined text-on-surface-variant text-[20px]">search</span>
         <input class="bg-transparent border-none focus:ring-0 w-44 ml-2 outline-none text-sm" placeholder="Rechercher..." type="text"/>
       </div>
+      {% if user.is_authenticated %}
+      <div class="flex items-center justify-center w-11 h-11 rounded-full overflow-hidden border border-outline-variant bg-surface-container">
+        {% if profile_photo_url %}
+        <img src="{{ profile_photo_url }}" alt="{{ user.first_name|default:user.username }}" class="w-full h-full object-cover" />
+        {% else %}
+        <span class="font-bold text-sm text-primary">
+          {% if user.first_name %}{{ user.first_name|first|upper }}{% if user.last_name %}{{ user.last_name|first|upper }}{% endif %}{% else %}{{ user.username|slice:":1"|upper }}{% endif %}
+        </span>
+        {% endif %}
+      </div>
+      {% else %}
       <a href="{% url 'register' %}" class="bg-secondary-container text-on-secondary-container font-bold px-4 py-2 rounded-full hover:shadow-lg active:scale-95 transition-all text-label-md">S'inscrire</a>
+      {% endif %}
       <!-- Mobile nav toggle -->
       <button id="sp-nav-toggle" class="md:hidden flex items-center justify-center w-10 h-10 rounded-full bg-surface-container border border-outline-variant hover:bg-surface-container-high transition-colors">
         <span class="material-symbols-outlined text-primary">menu</span>
@@ -281,13 +293,11 @@ tailwind.config = {
     <a href="{% url 'about' %}" class="sp-nav__mobile-link {% if request.resolver_match.url_name == 'about' %}sp-nav__mobile-link--active{% endif %}">
       <span class="material-symbols-outlined">church</span>À Propos
     </a>
+    {% if not user.is_authenticated %}
     <a href="{% url 'register' %}" class="sp-nav__mobile-link" style="background:linear-gradient(135deg,rgba(159,247,0,0.15),rgba(65,105,0,0.1));border:1px solid rgba(159,247,0,0.2)">
       <span class="material-symbols-outlined" style="color:#416900">favorite</span><span style="color:#00261b;font-weight:700">S'inscrire gratuitement</span>
     </a>
-    <a href="{% url 'subscriptions' %}" class="sp-nav__mobile-link">
-      <span class="material-symbols-outlined">volunteer_activism</span>Dons & Abonnements
-    </a>
-
+    {% endif %}
     <a href="{% url 'contact' %}" class="sp-nav__mobile-link">
       <span class="material-symbols-outlined">mail</span>Contact
     </a>
